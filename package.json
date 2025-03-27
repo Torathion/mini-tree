@@ -1,5 +1,5 @@
 {
-  "name": "micro-tree",
+  "name": "mini-tree",
   "version": "1.0.0",
   "description": "A tiny universal tree data structure that just works!",
   "types": "./index.d.ts",
@@ -26,13 +26,13 @@
     "small"
   ],
   "author": "Torathion",
-  "homepage": "https://github.com/Torathion/micro-tree",
+  "homepage": "https://github.com/Torathion/mini-tree",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Torathion/micro-tree.git"
+    "url": "git+https://github.com/Torathion/mini-tree.git"
   },
   "bugs": {
-    "url": "https://github.com/Torathion/micro-tree/issues"
+    "url": "https://github.com/Torathion/mini-tree/issues"
   },
   "sideEffects": false,
   "type": "module",

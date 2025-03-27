@@ -6,13 +6,13 @@ labels: ''
 assignees: ''
 ---
 
-- [] I have searched for [similar issues](https://github.com/torathion/micro-tree/issues)
+- [] I have searched for [similar issues](https://github.com/torathion/mini-tree/issues)
 
 ---
 
 ## Steps to Reproduce
 
-### micro-tree version
+### mini-tree version
 
 ```js
 ```

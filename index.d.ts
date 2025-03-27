@@ -1,4 +1,4 @@
-declare module 'micro-tree' {
+declare module 'mini-tree' {
   /**
    *  Callback type comparing a TreeNode to a specific value for checks.
    */

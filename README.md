@@ -1,23 +1,23 @@
-# micro-tree
+# mini-tree
 
 <p align="center">
 <h1 align="center">The smallest data tree structure for any purpose</h1>
 <p align="center">
-  <a href="https://www.npmjs.com/package/micro-tree"><img src="https://img.shields.io/npm/v/micro-tree?style=for-the-badge&logo=npm"/></a>
-  <a href="https://npmtrends.com/micro-tree"><img src="https://img.shields.io/npm/dm/micro-tree?style=for-the-badge"/></a>
-  <a href="https://bundlephobia.com/package/micro-tree"><img src="https://img.shields.io/bundlephobia/minzip/micro-tree?style=for-the-badge"/></a>
-  <a href="https://github.com/Torathion/micro-tree/blob/main/LICENSE"><img src="https://img.shields.io/github/license/Torathion/micro-tree?style=for-the-badge"/></a>
-  <a href="https://codecov.io/gh/torathion/micro-tree"><img src="https://codecov.io/gh/torathion/micro-tree/branch/main/graph/badge.svg?style=for-the-badge" /></a>
-  <a href="https://github.com/torathion/micro-tree/actions"><img src="https://img.shields.io/github/actions/workflow/status/torathion/micro-tree/build.yml?style=for-the-badge&logo=esbuild"/></a>
+  <a href="https://www.npmjs.com/package/mini-tree"><img src="https://img.shields.io/npm/v/mini-tree?style=for-the-badge&logo=npm"/></a>
+  <a href="https://npmtrends.com/mini-tree"><img src="https://img.shields.io/npm/dm/mini-tree?style=for-the-badge"/></a>
+  <a href="https://bundlephobia.com/package/mini-tree"><img src="https://img.shields.io/bundlephobia/minzip/mini-tree?style=for-the-badge"/></a>
+  <a href="https://github.com/Torathion/mini-tree/blob/main/LICENSE"><img src="https://img.shields.io/github/license/Torathion/mini-tree?style=for-the-badge"/></a>
+  <a href="https://codecov.io/gh/torathion/mini-tree"><img src="https://codecov.io/gh/torathion/mini-tree/branch/main/graph/badge.svg?style=for-the-badge" /></a>
+  <a href="https://github.com/torathion/mini-tree/actions"><img src="https://img.shields.io/github/actions/workflow/status/torathion/mini-tree/build.yml?style=for-the-badge&logo=esbuild"/></a>
 <a href="https://github.com/prettier/prettier#readme"><img alt="code style" src="https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=for-the-badge&logo=prettier"></a>
 </p>
 </p>
 
-`micro-tree` is a tiny, flexible, zero-dependency [Tree data structure](https://en.wikipedia.org/wiki/Tree_(abstract_data_type)) designed to be used for any purpose that requires data either ordered in a hierarchical structure or are in relation to each other. With an easy to use API, it's designed for those problems suited for managing hierarchical data without asking the
+`mini-tree` is a tiny, flexible, zero-dependency [Tree data structure](https://en.wikipedia.org/wiki/Tree_(abstract_data_type)) designed to be used for any purpose that requires data either ordered in a hierarchical structure or are in relation to each other. With an easy to use API, it's designed for those problems suited for managing hierarchical data without asking the
 question "What kind of tree fits the best?".
 
 ```powershell
-    pnpm i micro-tree
+    pnpm i mini-tree
 ```
 
 ## Why should I use a tree data structure?
@@ -30,7 +30,7 @@ working directory it's been called from and only has to check 5 or 6 folders as 
 
 ## Usage
 
-`micro-tree` relies on callbacks to achieve it's universal-purpose design. And those callbacks are structured differently:
+`mini-tree` relies on callbacks to achieve it's universal-purpose design. And those callbacks are structured differently:
 
 - `TreeComparator<T>` compares a `TreeNode<T>` with a specific value to usually check for further traversal to its child nodes. In other cases, namely if a value equals a node, it will either remove it (in `tree.remove`) or cancel a process (in `tree.add`).
 - `Traverser<T>` takes only a node to either iterate through it (in `tree.traverseAsync`) or validate it for further traversal to its child nodes.
@@ -38,7 +38,7 @@ working directory it's been called from and only has to check 5 or 6 folders as 
 
 ```typescript
 
-import Tree, { type TreeNode, type TreeComparator, type Traverser } from 'micro-tree'
+import Tree, { type TreeNode, type TreeComparator, type Traverser } from 'mini-tree'
 
 
 // Comparator that traverses down the hierarchy if the target value is larger than a node value
