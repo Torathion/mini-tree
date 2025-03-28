@@ -54,3 +54,4 @@ jobs:
                 github_token: ${{ secrets.GITHUB_TOKEN }}
                 skip_step: install
                 directory: ./dist
+                package_manger: pnpm
