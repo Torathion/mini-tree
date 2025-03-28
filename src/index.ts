@@ -164,6 +164,14 @@ export default class Tree<T, U = T> {
     root.add(this.counter++, value)
   }
 
+  /**
+   *  Adds an array of new nodes to the tree.
+   *
+   *  @param values - array holding the target values to insert.
+   *  @param traverser - callback mapping the target value to a node value to check for further traversal.
+   *  @param eq - callback checking if the target value is equal to a node value. If it's equal, it will cancel the process.
+   *  @param root - starting element to traverse through. By default, it starts at the tree root.
+   */
   addAll(values: T[], traverser: TreeComparator<T, T> = this.#comp as unknown as TreeComparator<T, T>, eq: TreeComparator<T> = this.#eq as unknown as TreeComparator<T, T>, root = this.root): void {
     for (const item of values) this.add(item, traverser, eq, root)
   }
