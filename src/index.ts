@@ -172,36 +172,35 @@ export default class Tree<T, U = T> {
    *  Extracts the values from a branch that matches the target value as close as possible.
    *
    *  @param targetValue - value to search for.
-   *  @param mapper - callback to decide whether to traverse downwards to the children.
+   *  @param comp - callback to decide whether to traverse downwards to the children.
    *  @param root - starting element to traverse through. By default, it starts at the tree root.
    *  @param store - array holding the values. New values will be pushed onto it. By default, a new array with
    *  the root element will be created.
    *  @returns the values of the branch leading towards the targeted value. If the value couldn't be found at all, it will return an empty array.
    */
-  branch(targetValue: U, traverser: TreeComparator<T, U> = this.#comp, root = this.root, store: T[] = [root.value]): T[] {
+  branch(targetValue: U, comp: TreeComparator<T, U> = this.#comp, eq: TreeComparator<T, U> = this.#eq, root = this.root, store: T[] = [root.value]): T[] {
     if (!root.isLeaf()) {
       for (const child of root.children) {
-        if (traverser(child, targetValue)) {
+        if (comp(child, targetValue)) {
           store.push(child.value)
-          this.branch(targetValue, traverser, child, store)
-          // Don't continue search
-          return store
+          return this.branch(targetValue, comp, eq, child, store)
         }
       }
-      // Invalid value case: Remove root element instead of creating new array
-      store.shift()
+      // Edge case: Value not found
+      // In nested invalid values, we need to discard the rest of the branch as well. So it's easier to just return an empty array.
+      return []
     }
-    return store
+    return eq(root, targetValue) ? store : []
   }
 
   /**
    *  Checks if a specific value exists inside the tree.
    *
-   * @param value - target value.
-   * @param comp - comparator callback to compare the node value with the target value with.
-   * @param traverser - callback to decide whether to traverse downwards to the children.
-   * @param root - starting element to traverse through. By default, it starts at the tree root.
-   * @returns `true`, if the tree has the value, otherwise `false`.
+   *  @param value - target value.
+   *  @param comp - comparator callback to compare the node value with the target value with.
+   *  @param traverser - callback to decide whether to traverse downwards to the children.
+   *  @param root - starting element to traverse through. By default, it starts at the tree root.
+   *  @returns `true`, if the tree has the value, otherwise `false`.
    */
   has(value: U, comp: TreeComparator<T, U> = this.#eq, traverser: TreeComparator<T, U> = this.#comp, root = this.root): boolean {
     if (comp(root, value)) return true

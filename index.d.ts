@@ -119,28 +119,28 @@ declare module 'mini-tree' {
      *  Extracts the values from a branch that matches the target value as close as possible.
      *
      *  @param targetValue - value to search for.
-     *  @param mapper - callback to decide whether to traverse downwards to the children.
+     *  @param comp - callback to decide whether to traverse downwards to the children.
      *  @param root - starting element to traverse through. By default, it starts at the tree root.
      *  @param store - array holding the values. New values will be pushed onto it. By default, a new array with
      *  the root element will be created.
      *  @returns the values of the branch leading towards the targeted value. If the value couldn't be found at all, it will return an empty array.
      */
-    branch(targetValue: T, traverser?: TreeComparator<T>, root?: TreeNode<T>, store?: T[]): T[]
+    branch(targetValue: T, comp?: TreeComparator<T>, root?: TreeNode<T>, store?: T[]): T[]
     /**
      *  Finds a node by its id. Ids are an internally incremened number.
      *
-     * @param id - internal id of the targeted node.
-     * @returns either the found node or `undefined`.
+     *  @param id - internal id of the targeted node.
+     *  @returns either the found node or `undefined`.
      */
     node(id: number): TreeNode<T> | undefined
     /**
      *  Checks if a specific value exists inside the tree.
      *
-     * @param value - target value.
-     * @param comp - comparator callback to compare the node value with the target value with.
-     * @param traverser - callback to decide whether to traverse downwards to the children.
-     * @param root - starting element to traverse through. By default, it starts at the tree root.
-     * @returns `true`, if the tree has the value, otherwise `false`.
+     *  @param value - target value.
+     *  @param comp - comparator callback to compare the node value with the target value with.
+     *  @param traverser - callback to decide whether to traverse downwards to the children.
+     *  @param root - starting element to traverse through. By default, it starts at the tree root.
+     *  @returns `true`, if the tree has the value, otherwise `false`.
      */
     has(value: T, comp?: TreeComparator<T>, traverser?: TreeComparator<T>, root?: TreeNode<T>): boolean
     [Symbol.iterator](): Iterator<TreeNode<T>>

@@ -2,17 +2,22 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import Tree, { TreeNode, type AsyncTraverser } from '../src'
 
 interface TestPathMetadata {
-
-
   path: string
-
-
   dir: boolean
-
-
   fileCount: number
+}
 
 
+function getComplexDataTree(): Tree<TestPathMetadata, string> {
+  const tree = new Tree<TestPathMetadata, string>({ path: '/', dir: true, fileCount: 5 }, (n, v) => v.startsWith(n.value.path), (n, v) => v === n.value.path)
+
+  tree.addAll([
+    { path: '/package.json', dir: false, fileCount: 0 },
+    { path: '/a', dir: true, fileCount: 1 },
+    { path: '/a/package.json', dir: false, fileCount: 0 },
+    { path: '/a/b', dir: true, fileCount: 0 }
+  ], (n, v) => v.path.startsWith(n.value.path), (n, v) => v.path === n.value.path)
+  return tree
 }
 
 describe('Tree', () => {
@@ -181,6 +186,14 @@ describe('Tree', () => {
       expect(tree.root.value).toBeUndefined()
       expect(tree.counter).toBe(0)
     })
+
+    it('can remove complex data with primitive data', () => {
+      const tree = getComplexDataTree()
+
+      tree.remove('/package.json')
+      expect(tree.root.childCount).toBe(1)
+
+    })
   })
 
   describe('Branches', () => {
@@ -198,6 +211,18 @@ describe('Tree', () => {
 
       // Shouldn't retrieve invalid branches
       expect(pathTree.branch('foobar')).toEqual([])
+
+      // Deep invalid branch
+      expect(pathTree.branch('/a/foobar')).toEqual([])
+    })
+
+    it('can retrieve a branch of complex data from a primitive value', () => {
+      const tree = getComplexDataTree()
+
+      expect(tree.branch('/a/b').map((v) => v.path)).toEqual(['/', '/a', '/a/b'])
+      expect(tree.branch('/package.json').map((v) => v.path)).toEqual(['/', '/package.json'])
+      expect(tree.branch('/c')).toEqual([])
+      expect(tree.branch('/a/b/c')).toEqual([])
     })
   })
 
@@ -229,6 +254,14 @@ describe('Tree', () => {
       expect(tree.has(0)).toBe(true)
       expect(tree.has(-1)).toBe(false)
       expect(tree.has(2567834)).toBe(false)
+    })
+
+    it('can search for primitive data in complex data', () => {
+      const tree = getComplexDataTree()
+
+      expect(tree.has('/a/b')).toBe(true)
+      expect(tree.has('/package.json')).toBe(true)
+      expect(tree.has('/a/b/c')).toBe(false)
     })
   })
 })
