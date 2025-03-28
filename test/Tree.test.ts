@@ -263,5 +263,22 @@ describe('Tree', () => {
       expect(tree.has('/package.json')).toBe(true)
       expect(tree.has('/a/b/c')).toBe(false)
     })
+
+    it('can find a node by its value', () => {
+      for (let i = 0; i < 10; i++) tree.add(i)
+
+      expect(tree.nodeByValue(5)?.value).toEqual(5)
+      expect(tree.nodeByValue(-1)).toBeUndefined()
+      expect(tree.nodeByValue(11)).toBeUndefined()
+    })
+
+    it('can find a node by its value inside complex data', () => {
+      const tree = getComplexDataTree()
+
+      expect(tree.nodeByValue('/')?.value.path).toBe('/')
+      expect(tree.nodeByValue('/a/b')?.value.path).toBe('/a/b')
+      expect(tree.nodeByValue('')).toBeUndefined()
+      expect(tree.nodeByValue('/a/b/c')).toBeUndefined()
+    })
   })
 })

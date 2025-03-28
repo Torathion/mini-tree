@@ -127,7 +127,7 @@ declare module 'mini-tree' {
      */
     branch(targetValue: T, comp?: TreeComparator<T>, root?: TreeNode<T>, store?: T[]): T[]
     /**
-     *  Finds a node by its id. Ids are an internally incremened number.
+     *  Finds a node by its id. Ids are an internally incremented number.
      *
      *  @param id - internal id of the targeted node.
      *  @returns either the found node or `undefined`.
@@ -137,7 +137,7 @@ declare module 'mini-tree' {
      *  Checks if a specific value exists inside the tree.
      *
      *  @param value - target value.
-     *  @param comp - comparator callback to compare the node value with the target value with.
+     *  @param comp - comparator callback to compare the node value with the target value with for further traversal.
      *  @param traverser - callback to decide whether to traverse downwards to the children.
      *  @param root - starting element to traverse through. By default, it starts at the tree root.
      *  @returns `true`, if the tree has the value, otherwise `false`.

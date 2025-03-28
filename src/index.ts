@@ -205,7 +205,7 @@ export default class Tree<T, U = T> {
    *  Checks if a specific value exists inside the tree.
    *
    *  @param value - target value.
-   *  @param comp - comparator callback to compare the node value with the target value with.
+   *  @param comp - comparator callback to compare the node value with the target value with for further traversal.
    *  @param traverser - callback to decide whether to traverse downwards to the children.
    *  @param root - starting element to traverse through. By default, it starts at the tree root.
    *  @returns `true`, if the tree has the value, otherwise `false`.
@@ -215,16 +215,14 @@ export default class Tree<T, U = T> {
     if (!root.isLeaf()) {
       for (const child of root.children) {
         if (comp(child, value)) return true
-        if (traverser(child, value)) {
-          return this.has(value, comp, traverser, child)
-        }
+        if (traverser(child, value)) return this.has(value, comp, traverser, child)
       }
     }
     return false
   }
 
   /**
-   *  Finds a node by its id. Ids are an internally incremened number.
+   *  Finds a node by its id. Ids are an internally incremented number.
    *
    * @param id - internal id of the targeted node.
    * @returns either the found node or `undefined`.
@@ -235,6 +233,26 @@ export default class Tree<T, U = T> {
         return node
       }
     }
+  }
+
+  /**
+   *  Finds a node by a given search value. It's particularly useful for getting an inner node to act as a sub-tree root for sub-tree operations.
+   *
+   *  @param value - target search value
+   *  @param comp - comparator callback to compare the node value with the target value with for further traversal.
+   *  @param eq - equality callback to compare the node value with the target to determine the correct node to find.
+   *  @param root - starting element to traverse through. By default, it starts at the tree root.
+   *  @returns either the desired `TreeNode` or `undefined`, if not found.
+   */
+  nodeByValue(value: U, comp: TreeComparator<T, U> = this.#comp, eq: TreeComparator<T, U> = this.#eq, root = this.root): TreeNode<T> | undefined {
+    if (eq(root, value)) return root
+    if (!root.isLeaf()) {
+      for (const child of root.children) {
+        if (eq(child, value)) return child
+        if (comp(child, value)) return this.nodeByValue(value, comp, eq, child)
+      }
+    }
+    return undefined
   }
 
   /**
