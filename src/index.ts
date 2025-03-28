@@ -133,7 +133,7 @@ export default class Tree<T, U = T> {
   private removeMeta(root: TreeNode<T>, child: TreeNode<T>, children: TreeNode<T>[]): void {
     children.splice(children.indexOf(child), 1)
     this.counter -= child.totalCount + 1
-    root.childCount -= child.totalCount
+    root.childCount--
 
     let parent: TreeNode<T> | undefined = root
     while (parent) {
@@ -241,7 +241,7 @@ export default class Tree<T, U = T> {
     if (comp(root, value)) {
       const parent = root.parent
       if (parent) {
-        this.removeMeta(root.parent, root, root.parent.children)
+        this.removeMeta(parent, root, parent.children)
       } else {
         this.root = new TreeNode(0, undefined as any)
         this.counter = 0
