@@ -48,3 +48,5 @@ jobs:
               run: pnpm run build
             - name: Build Stackblitz
               run:  pnpm dlx pkg-pr-new@0.0 publish --compact --pnpm .
+            - name: size-limit-action
+              uses: andresz1/size-limit-action@v1.8.0
