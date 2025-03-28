@@ -7,16 +7,23 @@ interface TestPathMetadata {
   fileCount: number
 }
 
-
 function getComplexDataTree(): Tree<TestPathMetadata, string> {
-  const tree = new Tree<TestPathMetadata, string>({ path: '/', dir: true, fileCount: 5 }, (n, v) => v.startsWith(n.value.path), (n, v) => v === n.value.path)
+  const tree = new Tree<TestPathMetadata, string>(
+    { path: '/', dir: true, fileCount: 5 },
+    (n, v) => v.startsWith(n.value.path),
+    (n, v) => v === n.value.path
+  )
 
-  tree.addAll([
-    { path: '/package.json', dir: false, fileCount: 0 },
-    { path: '/a', dir: true, fileCount: 1 },
-    { path: '/a/package.json', dir: false, fileCount: 0 },
-    { path: '/a/b', dir: true, fileCount: 0 }
-  ], (n, v) => v.path.startsWith(n.value.path), (n, v) => v.path === n.value.path)
+  tree.addAll(
+    [
+      { path: '/package.json', dir: false, fileCount: 0 },
+      { path: '/a', dir: true, fileCount: 1 },
+      { path: '/a/package.json', dir: false, fileCount: 0 },
+      { path: '/a/b', dir: true, fileCount: 0 }
+    ],
+    (n, v) => v.path.startsWith(n.value.path),
+    (n, v) => v.path === n.value.path
+  )
   return tree
 }
 
@@ -192,7 +199,6 @@ describe('Tree', () => {
 
       tree.remove('/package.json')
       expect(tree.root.childCount).toBe(1)
-
     })
   })
 
@@ -222,8 +228,8 @@ describe('Tree', () => {
     it('can retrieve a branch of complex data from a primitive value', () => {
       const tree = getComplexDataTree()
 
-      expect(tree.branch('/a/b').map((v) => v.path)).toEqual(['/', '/a', '/a/b'])
-      expect(tree.branch('/package.json').map((v) => v.path)).toEqual(['/', '/package.json'])
+      expect(tree.branch('/a/b').map(v => v.path)).toEqual(['/', '/a', '/a/b'])
+      expect(tree.branch('/package.json').map(v => v.path)).toEqual(['/', '/package.json'])
       expect(tree.branch('/c')).toEqual([])
       expect(tree.branch('/a/b/c')).toEqual([])
     })
