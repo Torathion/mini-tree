@@ -1,5 +1,19 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import Tree, { TreeNode, type Traverser, type AsyncTraverser } from '../src'
+import Tree, { TreeNode, type AsyncTraverser } from '../src'
+
+interface TestPathMetadata {
+
+
+  path: string
+
+
+  dir: boolean
+
+
+  fileCount: number
+
+
+}
 
 describe('Tree', () => {
   let tree: Tree<number>
@@ -89,6 +103,22 @@ describe('Tree', () => {
 
       expect(tree.root.childCount).toBe(1)
       expect(tree.counter).toBe(2)
+    })
+
+    it('should not add duplicate root value', () => {
+      tree.add(0)
+
+      expect(tree.root.childCount).toBe(0)
+      expect(tree.counter).toBe(1)
+    })
+
+    it('can add multiple values at once', () => {
+      const array: number[] = []
+      for (let i = 0; i < 100; i++) array.push(i)
+      tree.addAll(array)
+
+      let counter = 0
+      for (const node of tree) expect(node.value).toBe(counter++)
     })
   })
 
