@@ -2,7 +2,7 @@ declare module 'mini-tree' {
   /**
    *  Callback type comparing a TreeNode to a specific value for checks.
    */
-  export type TreeComparator<T> = (root: TreeNode<T>, value: T) => boolean
+  export type TreeComparator<T, U = T> = (root: TreeNode<T>, value: U) => boolean
   /**
    *  Callback type validating a TreeNode for further traversal to its children.
    */
@@ -77,7 +77,7 @@ declare module 'mini-tree' {
   /**
    *  Generic tree structure for all sorts of purposes.
    */
-  export default class Tree<T> {
+  export default class Tree<T, U = T> {
     /**
      *  The number of nodes inside the tree.
      */
@@ -86,10 +86,10 @@ declare module 'mini-tree' {
      *  The root element of the tree.
      */
     root: TreeNode<T>
-    readonly #comp: TreeComparator<T>
-    readonly #eq: TreeComparator<T>
+    readonly #comp: TreeComparator<T, U>
+    readonly #eq: TreeComparator<T, U>
 
-    constructor(rootValue: T, comp: TreeComparator<T>, eq?: TreeComparator<T>)
+    constructor(rootValue: T, comp: TreeComparator<T, U>, eq?: TreeComparator<T, U>)
     /**
      *  Adds a new node to the tree.
      *
@@ -98,7 +98,16 @@ declare module 'mini-tree' {
      *  @param eq - callback checking if the target value is equal to a node value. If it's equal, it will cancel the process.
      *  @param root - starting element to traverse through. By default, it starts at the tree root.
      */
-    add(value: T, traverser?: TreeComparator<T>, eq?: TreeComparator<T>, root?: TreeNode<T>): void
+    add(value: T, traverser?: TreeComparator<T, T>, eq?: TreeComparator<T, T>, root?: TreeNode<T>): void
+    /**
+     *  Adds an array of new nodes to the tree.
+     *
+     *  @param values - array holding the target values to insert.
+     *  @param traverser - callback mapping the target value to a node value to check for further traversal.
+     *  @param eq - callback checking if the target value is equal to a node value. If it's equal, it will cancel the process.
+     *  @param root - starting element to traverse through. By default, it starts at the tree root.
+     */
+    addAll(values: T[], traverser: TreeComparator<T, T>, eq: TreeComparator<T, T>, root): void
     /**
      *  Traverses the tree with an asynchronous traverser with the added optimization of running all children parallel.
      *
@@ -114,35 +123,45 @@ declare module 'mini-tree' {
      *  @param traverser - callback to decide whether to traverse downwards to the children.
      *  @param root - starting element to traverse through. By default, it starts at the tree root.
      */
-    remove(value: T, comp?: TreeComparator<T>, traverser?: TreeComparator<T>, root?: TreeNode<T>): void
+    remove(value: U, comp?: TreeComparator<T, U>, traverser?: TreeComparator<T, U>, root?: TreeNode<T>): void
     /**
      *  Extracts the values from a branch that matches the target value as close as possible.
      *
      *  @param targetValue - value to search for.
-     *  @param mapper - callback to decide whether to traverse downwards to the children.
+     *  @param comp - callback to decide whether to traverse downwards to the children.
      *  @param root - starting element to traverse through. By default, it starts at the tree root.
      *  @param store - array holding the values. New values will be pushed onto it. By default, a new array with
      *  the root element will be created.
      *  @returns the values of the branch leading towards the targeted value. If the value couldn't be found at all, it will return an empty array.
      */
-    branch(targetValue: T, traverser?: TreeComparator<T>, root?: TreeNode<T>, store?: T[]): T[]
+    branch(targetValue: U, comp?: TreeComparator<T, U>, root?: TreeNode<T>, store?: T[]): T[]
     /**
-     *  Finds a node by its id. Ids are an internally incremened number.
+     *  Finds a node by its id. Ids are an internally incremented number.
      *
-     * @param id - internal id of the targeted node.
-     * @returns either the found node or `undefined`.
+     *  @param id - internal id of the targeted node.
+     *  @returns either the found node or `undefined`.
      */
     node(id: number): TreeNode<T> | undefined
     /**
+     *  Finds a node by a given search value. It's particularly useful for getting an inner node to act as a sub-tree root for sub-tree operations.
+     *
+     *  @param value - target search value
+     *  @param comp - comparator callback to compare the node value with the target value with for further traversal.
+     *  @param eq - equality callback to compare the node value with the target to determine the correct node to find.
+     *  @param root - starting element to traverse through. By default, it starts at the tree root.
+     *  @returns either the desired `TreeNode` or `undefined`, if not found.
+     */
+    nodeByValue(value: U, comp: TreeComparator<T, U>, eq: TreeComparator<T, U>, root): TreeNode<T> | undefined
+    /**
      *  Checks if a specific value exists inside the tree.
      *
-     * @param value - target value.
-     * @param comp - comparator callback to compare the node value with the target value with.
-     * @param traverser - callback to decide whether to traverse downwards to the children.
-     * @param root - starting element to traverse through. By default, it starts at the tree root.
-     * @returns `true`, if the tree has the value, otherwise `false`.
+     *  @param value - target value.
+     *  @param comp - comparator callback to compare the node value with the target value with for further traversal.
+     *  @param traverser - callback to decide whether to traverse downwards to the children.
+     *  @param root - starting element to traverse through. By default, it starts at the tree root.
+     *  @returns `true`, if the tree has the value, otherwise `false`.
      */
-    has(value: T, comp?: TreeComparator<T>, traverser?: TreeComparator<T>, root?: TreeNode<T>): boolean
+    has(value: U, comp?: TreeComparator<T, U>, traverser?: TreeComparator<T, U>, root?: TreeNode<T>): boolean
     [Symbol.iterator](): Iterator<TreeNode<T>>
   }
 }

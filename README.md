@@ -1,7 +1,7 @@
 # mini-tree
 
 <p align="center">
-<h1 align="center">The smallest data tree structure for any purpose</h1>
+<h1 align="center">The smallest tree data structure for any purpose</h1>
 <p align="center">
   <a href="https://www.npmjs.com/package/mini-tree"><img src="https://img.shields.io/npm/v/mini-tree?style=for-the-badge&logo=npm"/></a>
   <a href="https://npmtrends.com/mini-tree"><img src="https://img.shields.io/npm/dm/mini-tree?style=for-the-badge"/></a>
@@ -65,7 +65,7 @@ tree.add(9, (n, v) => n.value > v, (n, v) => n.value === 5)
 tree.add(13, comp, eq, tree.node(3))
 
 // Remove node with a specific value
-tree.remove((n) => n.value === 5)
+tree.remove(5)
 
 // Traverse through all nodes using BFS
 for (const node of tree) {
@@ -74,6 +74,47 @@ for (const node of tree) {
 
 // Find nodes
 if (tree.has(7)) // Do cool stuff
+```
+
+### Usage with complex data
+
+Normally, you won't just use trees for mere numbers, but rather to hierarchically order metadata of specific items, like menus with sub menus, folders with files or categories with objects. For that, it's much easier to search for nodes using primitive values as keys.
+
+```typescript
+interface PathMetaData {
+  path: string
+  isDir: boolean
+  fileCount: number
+}
+// ...
+
+// Define a tree where the key (the value to compare to) is the path.
+const comp: TreeComparator<PathMetaData, string> = (n, v) => v.startsWith(n.value.path)
+const eq: TreeComparator<PathMetaData, string> = (n, v) => v === n.value.path
+
+const tree = new Tree<PathMetaData, string>({ path: '/', isDir: true, fileCount: 7 }, comp, eq)
+
+// Since we are adding complex data, the key to search for, i.e. the path string, doesn't fit when trying to
+// order new elements to the tree. So we need to define custom comparators for simply adding new data.
+tree.addAll([
+  { path: '/package.json', dir: false, fileCount: 0 },
+  { path: '/a', dir: true, fileCount: 1 },
+  { path: '/a/package.json', dir: false, fileCount: 0 },
+  { path: '/a/b', dir: true, fileCount: 0 }
+], (n, v) => v.path.startsWith(n.value.path), (n, v) => v.path === n.value.path)
+
+// Find values
+tree.has('/')
+tree.has('/a/b')
+
+// Get the branch with the value of /a/b
+// This returns the actual complex data as an array
+tree.branch('/a/b')
+
+tree.remove('/package.json')
+
+// Find the node with the value '/a' and start searching from there.
+tree.has('/a/b', comp, eq, tree.nodeByValue('/a'))
 ```
 
 ---

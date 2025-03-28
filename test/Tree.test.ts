@@ -1,5 +1,31 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import Tree, { TreeNode, type Traverser, type AsyncTraverser } from '../src'
+import Tree, { TreeNode, type AsyncTraverser } from '../src'
+
+interface TestPathMetadata {
+  path: string
+  dir: boolean
+  fileCount: number
+}
+
+function getComplexDataTree(): Tree<TestPathMetadata, string> {
+  const tree = new Tree<TestPathMetadata, string>(
+    { path: '/', dir: true, fileCount: 5 },
+    (n, v) => v.startsWith(n.value.path),
+    (n, v) => v === n.value.path
+  )
+
+  tree.addAll(
+    [
+      { path: '/package.json', dir: false, fileCount: 0 },
+      { path: '/a', dir: true, fileCount: 1 },
+      { path: '/a/package.json', dir: false, fileCount: 0 },
+      { path: '/a/b', dir: true, fileCount: 0 }
+    ],
+    (n, v) => v.path.startsWith(n.value.path),
+    (n, v) => v.path === n.value.path
+  )
+  return tree
+}
 
 describe('Tree', () => {
   let tree: Tree<number>
@@ -90,6 +116,22 @@ describe('Tree', () => {
       expect(tree.root.childCount).toBe(1)
       expect(tree.counter).toBe(2)
     })
+
+    it('should not add duplicate root value', () => {
+      tree.add(0)
+
+      expect(tree.root.childCount).toBe(0)
+      expect(tree.counter).toBe(1)
+    })
+
+    it('can add multiple values at once', () => {
+      const array: number[] = []
+      for (let i = 0; i < 100; i++) array.push(i)
+      tree.addAll(array)
+
+      let counter = 0
+      for (const node of tree) expect(node.value).toBe(counter++)
+    })
   })
 
   describe('Traversal', () => {
@@ -151,6 +193,13 @@ describe('Tree', () => {
       expect(tree.root.value).toBeUndefined()
       expect(tree.counter).toBe(0)
     })
+
+    it('can remove complex data with primitive data', () => {
+      const tree = getComplexDataTree()
+
+      tree.remove('/package.json')
+      expect(tree.root.childCount).toBe(1)
+    })
   })
 
   describe('Branches', () => {
@@ -166,8 +215,23 @@ describe('Tree', () => {
       expect(pathTree.branch('/a/c/e')).toEqual(['/', '/a', '/a/c', '/a/c/e'])
       expect(pathTree.branch('/b/d/f')).toEqual(['/', '/b', '/b/d', '/b/d/f'])
 
+      // Should stop after reaching target node, even if its not a leaf
+      expect(pathTree.branch('/a/c')).toEqual(['/', '/a', '/a/c'])
+
       // Shouldn't retrieve invalid branches
       expect(pathTree.branch('foobar')).toEqual([])
+
+      // Deep invalid branch
+      expect(pathTree.branch('/a/foobar')).toEqual([])
+    })
+
+    it('can retrieve a branch of complex data from a primitive value', () => {
+      const tree = getComplexDataTree()
+
+      expect(tree.branch('/a/b').map(v => v.path)).toEqual(['/', '/a', '/a/b'])
+      expect(tree.branch('/package.json').map(v => v.path)).toEqual(['/', '/package.json'])
+      expect(tree.branch('/c')).toEqual([])
+      expect(tree.branch('/a/b/c')).toEqual([])
     })
   })
 
@@ -199,6 +263,31 @@ describe('Tree', () => {
       expect(tree.has(0)).toBe(true)
       expect(tree.has(-1)).toBe(false)
       expect(tree.has(2567834)).toBe(false)
+    })
+
+    it('can search for primitive data in complex data', () => {
+      const tree = getComplexDataTree()
+
+      expect(tree.has('/a/b')).toBe(true)
+      expect(tree.has('/package.json')).toBe(true)
+      expect(tree.has('/a/b/c')).toBe(false)
+    })
+
+    it('can find a node by its value', () => {
+      for (let i = 0; i < 10; i++) tree.add(i)
+
+      expect(tree.nodeByValue(5)?.value).toEqual(5)
+      expect(tree.nodeByValue(-1)).toBeUndefined()
+      expect(tree.nodeByValue(11)).toBeUndefined()
+    })
+
+    it('can find a node by its value inside complex data', () => {
+      const tree = getComplexDataTree()
+
+      expect(tree.nodeByValue('/')?.value.path).toBe('/')
+      expect(tree.nodeByValue('/a/b')?.value.path).toBe('/a/b')
+      expect(tree.nodeByValue('')).toBeUndefined()
+      expect(tree.nodeByValue('/a/b/c')).toBeUndefined()
     })
   })
 })
