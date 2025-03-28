@@ -150,7 +150,7 @@ export default class Tree<T, U = T> {
    *  @param eq - callback checking if the target value is equal to a node value. If it's equal, it will cancel the process.
    *  @param root - starting element to traverse through. By default, it starts at the tree root.
    */
-  add(value: T, traverser: TreeComparator<T, T> = this.#comp as unknown as TreeComparator<T, T>, eq: TreeComparator<T> = this.#eq as unknown as TreeComparator<T, T>, root = this.root): void {
+  add(value: T, traverser: TreeComparator<T, T> = this.#comp as unknown as TreeComparator<T, T>, eq: TreeComparator<T, T> = this.#eq as unknown as TreeComparator<T, T>, root = this.root): void {
     if (eq(root, value)) return
     if (!root.isLeaf()) {
       for (const child of root.children) {
@@ -172,7 +172,7 @@ export default class Tree<T, U = T> {
    *  @param eq - callback checking if the target value is equal to a node value. If it's equal, it will cancel the process.
    *  @param root - starting element to traverse through. By default, it starts at the tree root.
    */
-  addAll(values: T[], traverser: TreeComparator<T, T> = this.#comp as unknown as TreeComparator<T, T>, eq: TreeComparator<T> = this.#eq as unknown as TreeComparator<T, T>, root = this.root): void {
+  addAll(values: T[], traverser: TreeComparator<T, T> = this.#comp as unknown as TreeComparator<T, T>, eq: TreeComparator<T, T> = this.#eq as unknown as TreeComparator<T, T>, root = this.root): void {
     for (const item of values) this.add(item, traverser, eq, root)
   }
 
