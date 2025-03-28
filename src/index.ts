@@ -194,9 +194,6 @@ export default class Tree<T, U = T> {
           return this.branch(targetValue, comp, eq, child, store)
         }
       }
-      // Edge case: Value not found
-      // In nested invalid values, we need to discard the rest of the branch as well. So it's easier to just return an empty array.
-      return []
     }
     return eq(root, targetValue) ? store : []
   }

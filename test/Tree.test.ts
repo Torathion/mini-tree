@@ -209,6 +209,9 @@ describe('Tree', () => {
       expect(pathTree.branch('/a/c/e')).toEqual(['/', '/a', '/a/c', '/a/c/e'])
       expect(pathTree.branch('/b/d/f')).toEqual(['/', '/b', '/b/d', '/b/d/f'])
 
+      // Should stop after reaching target node, even if its not a leaf
+      expect(pathTree.branch('/a/c')).toEqual(['/', '/a', '/a/c'])
+
       // Shouldn't retrieve invalid branches
       expect(pathTree.branch('foobar')).toEqual([])
 
