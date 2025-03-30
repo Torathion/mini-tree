@@ -36,6 +36,11 @@ working directory it's been called from and only has to check 5 or 6 folders as 
 - `Traverser<T>` takes only a node to either iterate through it (in `tree.traverseAsync`) or validate it for further traversal to its child nodes.
 - `AsyncTraverser<T>` is an asynchronous version of `Traverser` only used in `tree.traverseAsync`
 
+To reduce the bloat of using the `mini-tree` `Tree`, you pass a default comparator and on equal value callback into the constructor. This is used by default in every method of `Tree`, except `node` and `toJSON`. These callbacks can have different meanings depending on how you want to use the tree.
+
+1. If the passed callbacks are used to search values in `has`, `remove`, `nodeByValue` and `branch`, define extra insertion callbacks into `add` and `addAll`.
+2. If the passed callbacks are used to insert values, add callbacks to the search functions.
+
 ```typescript
 
 import Tree, { type TreeNode, type TreeComparator, type Traverser } from 'mini-tree'
@@ -115,6 +120,24 @@ tree.remove('/package.json')
 
 // Find the node with the value '/a' and start searching from there.
 tree.has('/a/b', comp, eq, tree.nodeByValue('/a'))
+```
+
+### Persistence
+
+Persisting tree data can be a very useful thing as well. While it is very hard to persist the relations between nodes, you still want to persist node modifications. This can be done like so:
+
+```typescript
+// Define your tree. If you want to persist it, it's recommended to reuse the comparator globally
+const comp: TreeComparator<number, number> = (n, v) => v > n.value
+const tree = new Tree(0, comp)
+// ... adding values
+// Persist your tree with toJSON. This returns a string of an array of your node values.
+const jsonString = tree.toJSON()
+
+const parsed = JSON.parse(jsonString)
+const newTree = new Tree(parsed[0], comp)
+// Even with the root value still present, mini-tree is robust enough to filter out the duplicate value
+newTree.addAll(parsed)
 ```
 
 ---
