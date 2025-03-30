@@ -107,6 +107,7 @@ export class TreeNode<T> {
 }
 
 const defaultEq: TreeComparator<unknown> = (node, value) => node.value === value
+const defaultComp: TreeComparator<unknown> = (_node, _value) => true
 
 /**
  *  Generic tree structure for all sorts of purposes.
@@ -123,7 +124,7 @@ export default class Tree<T, U = T> {
    */
   root: TreeNode<T>
 
-  constructor(rootValue: T, comp: TreeComparator<T, U>, eq: TreeComparator<T, U> = defaultEq) {
+  constructor(rootValue: T, comp: TreeComparator<T, U> = defaultComp, eq: TreeComparator<T, U> = defaultEq) {
     this.counter = 0
     this.root = new TreeNode(this.counter++, rootValue)
     this.#comp = comp
@@ -294,13 +295,24 @@ export default class Tree<T, U = T> {
     }
   }
 
-  * [Symbol.iterator](): Iterator<TreeNode<T>> {
+  *[Symbol.iterator](): Iterator<TreeNode<T>> {
     const queue: TreeNode<T>[] = [this.root]
     while (queue.length > 0) {
       const currentNode = queue.shift()!
       yield currentNode
       for (const child of currentNode.children) queue.push(child)
     }
+  }
+
+  /**
+   *  Converts the held values into a json-viable string.
+   *
+   *  @returns the json-viable string of only the values of the nodes.
+   */
+  toJSON(): string {
+    let str = '['
+    for (const node of this) str = `${str}${JSON.stringify(node.value)},`
+    return `${str.substring(0, str.length - 1)}]`
   }
 
   /**
