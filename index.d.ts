@@ -89,7 +89,7 @@ declare module 'mini-tree' {
     readonly #comp: TreeComparator<T, U>
     readonly #eq: TreeComparator<T, U>
 
-    constructor(rootValue: T, comp: TreeComparator<T, U>, eq?: TreeComparator<T, U>)
+    constructor(rootValue: T, comp?: TreeComparator<T, U>, eq?: TreeComparator<T, U>)
     /**
      *  Adds a new node to the tree.
      *
@@ -163,5 +163,11 @@ declare module 'mini-tree' {
      */
     has(value: U, comp?: TreeComparator<T, U>, traverser?: TreeComparator<T, U>, root?: TreeNode<T>): boolean
     [Symbol.iterator](): Iterator<TreeNode<T>>
+    /**
+    *  Converts the held values into a json-viable string.
+    *
+    *  @returns the json-viable string of only the values of the nodes.
+    */
+    toJSON(): string
   }
 }

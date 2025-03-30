@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## [1.2.0] 03-30-2025
+
+- Add `toJSON` to persist the tree.
+- Make constructor comparator callback optional for stub data.
+
 ## [1.1.1] 03-28-2025
 
 - Remove win32 vitest build dependency from 'dependencies'

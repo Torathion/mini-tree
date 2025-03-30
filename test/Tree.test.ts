@@ -290,4 +290,59 @@ describe('Tree', () => {
       expect(tree.nodeByValue('/a/b/c')).toBeUndefined()
     })
   })
+
+  describe('Persistence', () => {
+    it('can be converted to a json-viable string', () => {
+      expect(new Tree(0).toJSON()).toBe('[0]')
+
+      tree.add(5)
+      tree.add(3)
+      tree.add(7)
+
+      expect(tree.toJSON()).toBe('[0,5,3,7]')
+    })
+
+    it('should convert complex data to a json-viable string', () => {
+      expect(getComplexDataTree().toJSON()).toBe(
+        '[{"path":"/","dir":true,"fileCount":5},{"path":"/package.json","dir":false,"fileCount":0},{"path":"/a","dir":true,"fileCount":1},{"path":"/a/package.json","dir":false,"fileCount":0},{"path":"/a/b","dir":true,"fileCount":0}]'
+      )
+    })
+
+    it('should parse simple stringified content back', () => {
+      const zeroTree = new Tree(0)
+      const parsedTree = new Tree(0)
+
+      parsedTree.addAll(JSON.parse(zeroTree.toJSON()))
+
+      expect(parsedTree.root.value).toEqual(zeroTree.root.value)
+      expect(parsedTree.root.childCount).toBe(zeroTree.root.childCount)
+      expect(parsedTree.counter).toBe(zeroTree.counter)
+    })
+
+    it('should parse simple stringified content back', () => {
+      tree.addAll([5, 3, 7])
+
+      const parsedTree = new Tree(0, (node, value) => value > node.value)
+      parsedTree.addAll(JSON.parse(tree.toJSON()))
+
+      expect(parsedTree.root.value).toEqual(tree.root.value)
+      expect(parsedTree.root.childCount).toBe(tree.root.childCount)
+      expect(parsedTree.counter).toBe(tree.counter)
+    })
+
+    it('should parse complex stringified content back', () => {
+      const tree = getComplexDataTree()
+
+      const parsedContent = JSON.parse(tree.toJSON())
+      const parsedTree = new Tree(parsedContent[0])
+      parsedTree.addAll(
+        parsedContent,
+        (n, v) => v.path.startsWith(n.value.path),
+        (n, v) => v.path === n.value.path
+      )
+
+      expect(tree.toJSON()).toBe(parsedTree.toJSON())
+      expect(JSON.parse(tree.toJSON())).toEqual(JSON.parse(parsedTree.toJSON()))
+    })
+  })
 })
