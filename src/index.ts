@@ -295,7 +295,7 @@ export default class Tree<T, U = T> {
     }
   }
 
-  *[Symbol.iterator](): Iterator<TreeNode<T>> {
+  * [Symbol.iterator](): Iterator<TreeNode<T>> {
     const queue: TreeNode<T>[] = [this.root]
     while (queue.length > 0) {
       const currentNode = queue.shift()!
