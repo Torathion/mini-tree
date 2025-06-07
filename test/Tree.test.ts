@@ -14,15 +14,18 @@ function getComplexDataTree(): Tree<TestPathMetadata, string> {
     (n, v) => v === n.value.path
   )
 
+  tree.onAdd(
+    (n, v) => v.path === n.value.path,
+    (n, v) => v.path.startsWith(n.value.path)
+  )
+
   tree.addAll(
     [
       { path: '/package.json', dir: false, fileCount: 0 },
       { path: '/a', dir: true, fileCount: 1 },
       { path: '/a/package.json', dir: false, fileCount: 0 },
       { path: '/a/b', dir: true, fileCount: 0 }
-    ],
-    (n, v) => v.path.startsWith(n.value.path),
-    (n, v) => v.path === n.value.path
+    ]
   )
   return tree
 }
@@ -109,6 +112,21 @@ describe('Tree', () => {
       expect(tree.root.children.map(n => n.value)).toEqual([5, 3])
     })
 
+    it('can redefine the standard comparator functions', () => {
+      tree.comp((node, value) => value < node.value)
+      tree.eq((node, value) => value === node.value)
+
+
+      // Add comparators are still the same
+      tree.add(5)
+      tree.add(3)
+      tree.add(7)
+
+      expect(tree.has(5)).toBe(true)
+      // Should fail, as we can't reach it anymore with the new comparator
+      expect(tree.has(7)).toBe(false)
+    })
+
     it('should not add duplicate values', () => {
       tree.add(5)
       tree.add(5)
@@ -180,9 +198,9 @@ describe('Tree', () => {
 
       tree.remove(
         7,
+        tree.node(3),
         (n, v) => n.value === v,
-        (n, v) => v > n.value,
-        tree.node(3)
+        (n, v) => v > n.value
       )
       expect(tree.root.childCount).toBe(2)
       expect(tree.counter).toBe(3)
@@ -335,11 +353,13 @@ describe('Tree', () => {
 
       const parsedContent = JSON.parse(tree.toJSON())
       const parsedTree = new Tree(parsedContent[0])
-      parsedTree.addAll(
-        parsedContent,
+
+      parsedTree.onAdd(
+        (n, v) => v.path === n.value.path,
         (n, v) => v.path.startsWith(n.value.path),
-        (n, v) => v.path === n.value.path
       )
+
+      parsedTree.addAll(parsedContent)
 
       expect(tree.toJSON()).toBe(parsedTree.toJSON())
       expect(JSON.parse(tree.toJSON())).toEqual(JSON.parse(parsedTree.toJSON()))
