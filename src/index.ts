@@ -149,8 +149,6 @@ export default class Tree<T, U = T> {
    *  Adds a new node to the tree.
    *
    *  @param value - target value to insert.
-   *  @param traverser - callback mapping the target value to a node value to check for further traversal.
-   *  @param eq - callback checking if the target value is equal to a node value. If it's equal, it will cancel the process.
    *  @param root - starting element to traverse through. By default, it starts at the tree root.
    */
   add(value: T, root = this.root): void {
@@ -171,8 +169,6 @@ export default class Tree<T, U = T> {
    *  Adds an array of new nodes to the tree.
    *
    *  @param values - array holding the target values to insert.
-   *  @param traverser - callback mapping the target value to a node value to check for further traversal.
-   *  @param eq - callback checking if the target value is equal to a node value. If it's equal, it will cancel the process.
    *  @param root - starting element to traverse through. By default, it starts at the tree root.
    */
   addAll(values: T[], root = this.root): void {
@@ -183,7 +179,6 @@ export default class Tree<T, U = T> {
    *  Extracts the values from a branch that matches the target value as close as possible.
    *
    *  @param targetValue - value to search for.
-   *  @param comp - callback to decide whether to traverse downwards to the children.
    *  @param root - starting element to traverse through. By default, it starts at the tree root.
    *  @param store - array holding the values. New values will be pushed onto it. By default, a new array with
    *  the root element will be created.
@@ -255,8 +250,6 @@ export default class Tree<T, U = T> {
    *  Finds a node by a given search value. It's particularly useful for getting an inner node to act as a sub-tree root for sub-tree operations.
    *
    *  @param value - target search value
-   *  @param comp - comparator callback to compare the node value with the target value with for further traversal.
-   *  @param eq - equality callback to compare the node value with the target to determine the correct node to find.
    *  @param root - starting element to traverse through. By default, it starts at the tree root.
    *  @returns either the desired `TreeNode` or `undefined`, if not found.
    */
