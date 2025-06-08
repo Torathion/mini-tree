@@ -251,6 +251,19 @@ describe('Tree', () => {
       expect(tree.branch('/c')).toEqual([])
       expect(tree.branch('/a/b/c')).toEqual([])
     })
+
+    it('can retrieve a branch starting from a sub-root', () => {
+        const tree = new Tree<number>(0, (node, value) => value >= node.value, (node, value) => value === node.value)
+
+        tree.add(9)
+        tree.add(3)
+        tree.add(4)
+        tree.add(6)
+        tree.add(5)
+
+        // Full branch: 0 -> 3 -> 4 -> 5
+        expect(tree.branch(5, tree.nodeByValue(3))).toEqual([3, 4, 5])
+    })
   })
 
   describe('Iterator', () => {

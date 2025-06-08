@@ -187,6 +187,10 @@ export default class Tree<T, U = T> {
   branch(targetValue: U, root = this.root, store: T[] = [root.value]): T[] {
     if (!root.isLeaf()) {
       for (const child of root.children) {
+        if ((child.isLeaf() && this.#eq(child, targetValue))) {
+          store.push(child.value)
+          return store
+        }
         if (this.#comp(child, targetValue)) {
           store.push(child.value)
           return this.branch(targetValue, child, store)
