@@ -34,7 +34,7 @@ describe('Tree', () => {
   let tree: Tree<number>
 
   beforeEach(() => {
-    tree = new Tree<number>(0, (node, value) => value > node.value)
+    tree = new Tree<number>(0, (node, value) => value > node.value, (node, value) => value === node.value)
   })
 
   describe('TreeNode', () => {
@@ -253,8 +253,6 @@ describe('Tree', () => {
     })
 
     it('can retrieve a branch starting from a sub-root', () => {
-        const tree = new Tree<number>(0, (node, value) => value >= node.value, (node, value) => value === node.value)
-
         tree.add(9)
         tree.add(3)
         tree.add(4)
@@ -263,6 +261,35 @@ describe('Tree', () => {
 
         // Full branch: 0 -> 3 -> 4 -> 5
         expect(tree.branch(5, tree.nodeByValue(3))).toEqual([3, 4, 5])
+        expect(tree.branch(5, tree.nodeByValue(5))).toEqual([5])
+    })
+
+    describe('All', () => {
+      it('acts the same like branch on leaf element', () => {
+        tree.add(9)
+        tree.add(3)
+        tree.add(4)
+        tree.add(6)
+        tree.add(5)
+
+        // Full branch: 0 -> 3 -> 4 -> 5
+        expect(tree.branchAll(5)).toEqual([0, 3, 4, 5])
+        expect(tree.branchAll(5, tree.nodeByValue(3))).toEqual([3, 4, 5])
+        expect(tree.branchAll(9)).toEqual([0, 9])
+        expect(tree.branchAll(9, tree.nodeByValue(9))).toEqual([9])
+      })
+
+      it('fetches all underlying child nodes when the value has already been found', () => {
+        tree.add(9)
+        tree.add(3)
+        tree.add(4)
+        tree.add(6)
+        tree.add(5)
+
+        // Full branch: 0 -> 3 -> 4 -> [5, 6]
+        expect(tree.branchAll(3)).toEqual([0, 3, 4, 6, 5])
+        expect(tree.branchAll(7)).toEqual([])
+      })
     })
   })
 

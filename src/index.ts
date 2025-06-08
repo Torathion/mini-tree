@@ -176,7 +176,7 @@ export default class Tree<T, U = T> {
   }
 
   /**
-   *  Extracts the values from a branch that matches the target value as close as possible.
+   *  Extracts the values from a branch that leads to the target value.
    *
    *  @param targetValue - value to search for.
    *  @param root - starting element to traverse through. By default, it starts at the tree root.
@@ -197,7 +197,40 @@ export default class Tree<T, U = T> {
         }
       }
     }
+    // Last check to identify if the value is invalid
     return this.#eq(root, targetValue) ? store : []
+  }
+
+    /**
+   *  Extracts the values from a branch that leads to the target value including all its children.
+   *
+   *  @param targetValue - value to search for.
+   *  @param root - starting element to traverse through. By default, it starts at the tree root.
+   *  @param store - array holding the values. New values will be pushed onto it. By default, a new array with
+   *  the root element will be created.
+   *  @param found - flag indicating whether the target value has already been found.
+   *  @returns the values of the branch leading towards the targeted value. If the value couldn't be found at all, it will return an empty array.
+   */
+  branchAll(targetValue: U, root = this.root, store: T[] = [root.value], found = false): T[] {
+    if (!root.isLeaf()) {
+      for (const child of root.children) {
+        if (found) {
+          store.push(child.value)
+          if (child.isLeaf()) continue
+          return this.branchAll(targetValue, child, store, found)
+        }
+        if (this.#eq(child, targetValue)) {
+          found = true
+          store.push(child.value)
+          return child.isLeaf() ? store : this.branchAll(targetValue, child, store, found)
+        }
+        if (this.#comp(child, targetValue)) {
+          store.push(child.value)
+          return this.branchAll(targetValue, child, store, found)
+        }
+      }
+    }
+    return found || this.#eq(root, targetValue) ? store : []
   }
 
   comp(callback: TreeComparator<T, U>): this {
