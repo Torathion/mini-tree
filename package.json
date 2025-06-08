@@ -48,5 +48,15 @@
     "typescript": "^5.8.3",
     "vite": "^6.3.5",
     "vitest": "^3.2.2"
-  }
+  },
+  "size-limit": [
+    {
+      "path": "dist/index.js",
+      "limit": "4 kB"
+    },
+    {
+      "path": "dist/index.mjs",
+      "limit": "4 kB"
+    }
+  ]
 }
