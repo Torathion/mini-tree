@@ -19,14 +19,12 @@ function getComplexDataTree(): Tree<TestPathMetadata, string> {
     (n, v) => v.path.startsWith(n.value.path)
   )
 
-  tree.addAll(
-    [
-      { path: '/package.json', dir: false, fileCount: 0 },
-      { path: '/a', dir: true, fileCount: 1 },
-      { path: '/a/package.json', dir: false, fileCount: 0 },
-      { path: '/a/b', dir: true, fileCount: 0 }
-    ]
-  )
+  tree.addAll([
+    { path: '/package.json', dir: false, fileCount: 0 },
+    { path: '/a', dir: true, fileCount: 1 },
+    { path: '/a/package.json', dir: false, fileCount: 0 },
+    { path: '/a/b', dir: true, fileCount: 0 }
+  ])
   return tree
 }
 
@@ -34,7 +32,11 @@ describe('Tree', () => {
   let tree: Tree<number>
 
   beforeEach(() => {
-    tree = new Tree<number>(0, (node, value) => value > node.value, (node, value) => value === node.value)
+    tree = new Tree<number>(
+      0,
+      (node, value) => value > node.value,
+      (node, value) => value === node.value
+    )
   })
 
   describe('TreeNode', () => {
@@ -115,7 +117,6 @@ describe('Tree', () => {
     it('can redefine the standard comparator functions', () => {
       tree.comp((node, value) => value < node.value)
       tree.eq((node, value) => value === node.value)
-
 
       // Add comparators are still the same
       tree.add(5)
@@ -253,15 +254,15 @@ describe('Tree', () => {
     })
 
     it('can retrieve a branch starting from a sub-root', () => {
-        tree.add(9)
-        tree.add(3)
-        tree.add(4)
-        tree.add(6)
-        tree.add(5)
+      tree.add(9)
+      tree.add(3)
+      tree.add(4)
+      tree.add(6)
+      tree.add(5)
 
-        // Full branch: 0 -> 3 -> 4 -> 5
-        expect(tree.branch(5, tree.nodeByValue(3))).toEqual([3, 4, 5])
-        expect(tree.branch(5, tree.nodeByValue(5))).toEqual([5])
+      // Full branch: 0 -> 3 -> 4 -> 5
+      expect(tree.branch(5, tree.nodeByValue(3))).toEqual([3, 4, 5])
+      expect(tree.branch(5, tree.nodeByValue(5))).toEqual([5])
     })
 
     describe('All', () => {
@@ -396,7 +397,7 @@ describe('Tree', () => {
 
       parsedTree.onAdd(
         (n, v) => v.path === n.value.path,
-        (n, v) => v.path.startsWith(n.value.path),
+        (n, v) => v.path.startsWith(n.value.path)
       )
 
       parsedTree.addAll(parsedContent)

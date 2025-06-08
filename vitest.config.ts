@@ -19,16 +19,7 @@ export default defineConfig({
       enabled: true,
       all: true,
       provider: 'v8',
-      exclude: [
-        '**/*.js',
-        '**/*.mjs',
-        '**/*.d.ts',
-        '**/types/',
-        '**/constants.ts',
-        '**/*.config.ts',
-        '**/*.config.js',
-        '**/test-utils.ts/**'
-      ],
+      exclude: ['**/*.js', '**/*.mjs', '**/*.d.ts', '**/types/', '**/constants.ts', '**/*.config.ts', '**/*.config.js', '**/test-utils.ts/**'],
       reporter: ['text', 'text-summary', 'json', 'json-summary']
     },
     testTimeout: 10000,

@@ -129,8 +129,8 @@ export default class Tree<T, U = T> {
   constructor(rootValue: T, comp: TreeComparator<T, U> = defaultComp, eq: TreeComparator<T, U> = defaultEq) {
     this.counter = 0
     this.root = new TreeNode(this.counter++, rootValue)
-    this.#addComp = (this.#comp = comp as any)
-    this.#addEq = (this.#eq = eq as any)
+    this.#addComp = this.#comp = comp as any
+    this.#addEq = this.#eq = eq as any
   }
 
   private removeMeta(root: TreeNode<T>, child: TreeNode<T>, children: TreeNode<T>[]): void {
@@ -187,7 +187,7 @@ export default class Tree<T, U = T> {
   branch(targetValue: U, root = this.root, store: T[] = [root.value]): T[] {
     if (!root.isLeaf()) {
       for (const child of root.children) {
-        if ((child.isLeaf() && this.#eq(child, targetValue))) {
+        if (child.isLeaf() && this.#eq(child, targetValue)) {
           store.push(child.value)
           return store
         }
@@ -201,7 +201,7 @@ export default class Tree<T, U = T> {
     return this.#eq(root, targetValue) ? store : []
   }
 
-    /**
+  /**
    *  Extracts the values from a branch that leads to the target value including all its children.
    *
    *  @param targetValue - value to search for.
@@ -309,7 +309,7 @@ export default class Tree<T, U = T> {
    *  @param traverser - callback to decide whether to traverse downwards to the children.
    *  @param root - starting element to traverse through. By default, it starts at the tree root.
    */
-  remove(value: U,  root = this.root, comp: TreeComparator<T, U> = this.#eq, traverser: TreeComparator<T, U> = this.#comp): void {
+  remove(value: U, root = this.root, comp: TreeComparator<T, U> = this.#eq, traverser: TreeComparator<T, U> = this.#comp): void {
     if (this.#eq(root, value)) {
       const parent = root.parent
       if (parent) {
