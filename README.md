@@ -63,11 +63,10 @@ tree.add(7)
 // Add same values (won't do anything)
 tree.add(5)
 
-// Add values with custom comparators
-tree.add(9, (n, v) => n.value > v, (n, v) => n.value === 5)
-
-// Start from a specific sub node
-tree.add(13, comp, eq, tree.node(3))
+// Start from a specific sub node (id). Every node holds an id.
+tree.add(13, tree.node(3)) // start at the third added node
+// or by value
+tree.add(13, tree.nodeByValue(3))
 
 // Remove node with a specific value
 tree.remove(5)
@@ -97,7 +96,18 @@ interface PathMetaData {
 const comp: TreeComparator<PathMetaData, string> = (n, v) => v.startsWith(n.value.path)
 const eq: TreeComparator<PathMetaData, string> = (n, v) => v === n.value.path
 
+// Define callbacks in constructor
 const tree = new Tree<PathMetaData, string>({ path: '/', isDir: true, fileCount: 7 }, comp, eq)
+
+// or in extra methods
+tree.eq(eq)
+tree.comp(comp)
+
+// Define what callbacks to use on add.
+tree.onAdd(
+  (n, v) => v.path === n.value.path,
+  (n, v) => v.path.startsWith(n.value.path)
+)
 
 // Since we are adding complex data, the key to search for, i.e. the path string, doesn't fit when trying to
 // order new elements to the tree. So we need to define custom comparators for simply adding new data.
@@ -106,7 +116,7 @@ tree.addAll([
   { path: '/a', dir: true, fileCount: 1 },
   { path: '/a/package.json', dir: false, fileCount: 0 },
   { path: '/a/b', dir: true, fileCount: 0 }
-], (n, v) => v.path.startsWith(n.value.path), (n, v) => v.path === n.value.path)
+])
 
 // Find values
 tree.has('/')
@@ -115,11 +125,13 @@ tree.has('/a/b')
 // Get the branch with the value of /a/b
 // This returns the actual complex data as an array
 tree.branch('/a/b')
+// This retrieves all child nodes belonging to the target node as well
+tree.branchAll('/a', tree.nodeByValue('/a'))
 
 tree.remove('/package.json')
 
 // Find the node with the value '/a' and start searching from there.
-tree.has('/a/b', comp, eq, tree.nodeByValue('/a'))
+tree.has('/a/b', tree.nodeByValue('/a'))
 ```
 
 ### Persistence

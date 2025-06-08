@@ -34,7 +34,7 @@ export class TreeNode<T> {
   /**
    *  The amount of total children over any underlying levels.
    */
-  totalCount: number
+  total: number
   /**
    *  The actual value this node holds.
    */
@@ -45,7 +45,7 @@ export class TreeNode<T> {
     this.value = value
     this.parent = parent
     this.children = []
-    this.childCount = this.totalCount = 0
+    this.childCount = this.total = 0
   }
 
   /**
@@ -59,7 +59,7 @@ export class TreeNode<T> {
     this.childCount++
     let parent: TreeNode<T> | undefined = this
     while (parent) {
-      parent.totalCount++
+      parent.total++
       parent = parent.parent
     }
   }
@@ -70,7 +70,7 @@ export class TreeNode<T> {
    * @param node - potential parent node.
    * @returns `true`, if the given node is the actual parent node of the current node, otherwise `false`.
    */
-  isChildOf(node: TreeNode<T>): boolean {
+  childOf(node: TreeNode<T>): boolean {
     return this.parent?.id === node.id
   }
 
@@ -79,7 +79,7 @@ export class TreeNode<T> {
    *
    * @returns `true`, if the node doesn't have any children, otherwise `false`.
    */
-  isLeaf(): boolean {
+  get leaf(): boolean {
     return !this.childCount
   }
 
@@ -89,7 +89,7 @@ export class TreeNode<T> {
    * @param node - potential child node.
    * @returns `true`, if the current node is the parent of the given node, otherwise `false`.
    */
-  isParentOf(node: TreeNode<T>): boolean {
+  parentOf(node: TreeNode<T>): boolean {
     const childCount = this.childCount
     if (!childCount) return false
     for (let children = this.children, i = 0, id = node.id; i < childCount; i++) if (children[i].id === id) return true
@@ -101,7 +101,7 @@ export class TreeNode<T> {
    *
    * @returns `true`, if the node is the actual root of the tree, otherwise `false`.
    */
-  isRoot(): boolean {
+  get root(): boolean {
     return !this.parent
   }
 }
@@ -113,32 +113,34 @@ const defaultComp: TreeComparator<unknown> = (_node, _value) => true
  *  Generic tree structure for all sorts of purposes.
  */
 export default class Tree<T, U = T> {
-  readonly #comp: TreeComparator<T, U>
-  readonly #eq: TreeComparator<T, U>
+  #addComp: TreeComparator<T, T>
+  #addEq: TreeComparator<T, T>
+  #comp: TreeComparator<T, U>
+  #eq: TreeComparator<T, U>
   /**
    *  The number of nodes inside the tree.
    */
-  counter: number
+  count: number
   /**
    *  The root element of the tree.
    */
   root: TreeNode<T>
 
   constructor(rootValue: T, comp: TreeComparator<T, U> = defaultComp, eq: TreeComparator<T, U> = defaultEq) {
-    this.counter = 0
-    this.root = new TreeNode(this.counter++, rootValue)
-    this.#comp = comp
-    this.#eq = eq
+    this.count = 0
+    this.root = new TreeNode(this.count++, rootValue)
+    this.#addComp = this.#comp = comp as any
+    this.#addEq = this.#eq = eq as any
   }
 
   private removeMeta(root: TreeNode<T>, child: TreeNode<T>, children: TreeNode<T>[]): void {
     children.splice(children.indexOf(child), 1)
-    this.counter -= child.totalCount + 1
+    this.count -= child.total + 1
     root.childCount--
 
     let parent: TreeNode<T> | undefined = root
     while (parent) {
-      parent.totalCount -= child.totalCount
+      parent.total -= child.total
       parent = parent.parent
     }
   }
@@ -147,72 +149,104 @@ export default class Tree<T, U = T> {
    *  Adds a new node to the tree.
    *
    *  @param value - target value to insert.
-   *  @param traverser - callback mapping the target value to a node value to check for further traversal.
-   *  @param eq - callback checking if the target value is equal to a node value. If it's equal, it will cancel the process.
    *  @param root - starting element to traverse through. By default, it starts at the tree root.
    */
-  add(
-    value: T,
-    traverser: TreeComparator<T, T> = this.#comp as unknown as TreeComparator<T, T>,
-    eq: TreeComparator<T, T> = this.#eq as unknown as TreeComparator<T, T>,
-    root = this.root
-  ): void {
-    if (eq(root, value)) return
-    if (!root.isLeaf()) {
+  add(value: T, root = this.root): void {
+    if (this.#addEq(root, value)) return
+    if (!root.leaf) {
       for (const child of root.children) {
-        if (eq(child, value)) return
-        if (traverser(child, value)) {
-          this.add(value, traverser, eq, child)
+        if (this.#addEq(child, value)) return
+        if (this.#addComp(child, value)) {
+          this.add(value, child)
           return
         }
       }
     }
-    root.add(this.counter++, value)
+    root.add(this.count++, value)
   }
 
   /**
    *  Adds an array of new nodes to the tree.
    *
    *  @param values - array holding the target values to insert.
-   *  @param traverser - callback mapping the target value to a node value to check for further traversal.
-   *  @param eq - callback checking if the target value is equal to a node value. If it's equal, it will cancel the process.
    *  @param root - starting element to traverse through. By default, it starts at the tree root.
    */
-  addAll(
-    values: T[],
-    traverser: TreeComparator<T, T> = this.#comp as unknown as TreeComparator<T, T>,
-    eq: TreeComparator<T, T> = this.#eq as unknown as TreeComparator<T, T>,
-    root = this.root
-  ): void {
-    for (const item of values) this.add(item, traverser, eq, root)
+  addAll(values: T[], root = this.root): void {
+    for (const item of values) this.add(item, root)
   }
 
   /**
-   *  Extracts the values from a branch that matches the target value as close as possible.
+   *  Extracts the values from a branch that leads to the target value.
    *
    *  @param targetValue - value to search for.
-   *  @param comp - callback to decide whether to traverse downwards to the children.
    *  @param root - starting element to traverse through. By default, it starts at the tree root.
    *  @param store - array holding the values. New values will be pushed onto it. By default, a new array with
    *  the root element will be created.
    *  @returns the values of the branch leading towards the targeted value. If the value couldn't be found at all, it will return an empty array.
    */
-  branch(
-    targetValue: U,
-    comp: TreeComparator<T, U> = this.#comp,
-    eq: TreeComparator<T, U> = this.#eq,
-    root = this.root,
-    store: T[] = [root.value]
-  ): T[] {
-    if (!root.isLeaf()) {
+  branch(targetValue: U, root = this.root, store: T[] = [root.value]): T[] {
+    if (!root.leaf) {
       for (const child of root.children) {
-        if (comp(child, targetValue)) {
+        if (child.leaf && this.#eq(child, targetValue)) {
           store.push(child.value)
-          return this.branch(targetValue, comp, eq, child, store)
+          return store
+        }
+        if (this.#comp(child, targetValue)) {
+          store.push(child.value)
+          return this.branch(targetValue, child, store)
         }
       }
     }
-    return eq(root, targetValue) ? store : []
+    // Last check to identify if the value is invalid
+    return this.#eq(root, targetValue) ? store : []
+  }
+
+  /**
+   *  Extracts the values from a branch that leads to the target value including all its children.
+   *
+   *  @param targetValue - value to search for.
+   *  @param root - starting element to traverse through. By default, it starts at the tree root.
+   *  @param store - array holding the values. New values will be pushed onto it. By default, a new array with
+   *  the root element will be created.
+   *  @param found - flag indicating whether the target value has already been found.
+   *  @returns the values of the branch leading towards the targeted value. If the value couldn't be found at all, it will return an empty array.
+   */
+  branchAll(targetValue: U, root = this.root, store: T[] = [root.value], found = false): T[] {
+    if (!root.leaf) {
+      for (const child of root.children) {
+        if (found) {
+          store.push(child.value)
+          if (child.leaf) continue
+          return this.branchAll(targetValue, child, store, found)
+        }
+        if (this.#eq(child, targetValue)) {
+          found = true
+          store.push(child.value)
+          return child.leaf ? store : this.branchAll(targetValue, child, store, found)
+        }
+        if (this.#comp(child, targetValue)) {
+          store.push(child.value)
+          return this.branchAll(targetValue, child, store, found)
+        }
+      }
+    }
+    return found || this.#eq(root, targetValue) ? store : []
+  }
+
+  comp(callback: TreeComparator<T, U>): this {
+    this.#comp = callback
+    return this
+  }
+
+  eq(callback: TreeComparator<T, U>): this {
+    this.#eq = callback
+    return this
+  }
+
+  onAdd(addEq: TreeComparator<T, T>, addComp: TreeComparator<T, T>): this {
+    this.#addEq = addEq
+    this.#addComp = addComp
+    return this
   }
 
   /**
@@ -224,12 +258,12 @@ export default class Tree<T, U = T> {
    *  @param root - starting element to traverse through. By default, it starts at the tree root.
    *  @returns `true`, if the tree has the value, otherwise `false`.
    */
-  has(value: U, comp: TreeComparator<T, U> = this.#eq, traverser: TreeComparator<T, U> = this.#comp, root = this.root): boolean {
-    if (comp(root, value)) return true
-    if (!root.isLeaf()) {
+  has(value: U, root = this.root, eq: TreeComparator<T, U> = this.#eq, comp: TreeComparator<T, U> = this.#comp): boolean {
+    if (this.#eq(root, value)) return true
+    if (!root.leaf) {
       for (const child of root.children) {
-        if (comp(child, value)) return true
-        if (traverser(child, value)) return this.has(value, comp, traverser, child)
+        if (this.#eq(child, value)) return true
+        if (this.#comp(child, value)) return this.has(value, child, eq, comp)
       }
     }
     return false
@@ -253,17 +287,15 @@ export default class Tree<T, U = T> {
    *  Finds a node by a given search value. It's particularly useful for getting an inner node to act as a sub-tree root for sub-tree operations.
    *
    *  @param value - target search value
-   *  @param comp - comparator callback to compare the node value with the target value with for further traversal.
-   *  @param eq - equality callback to compare the node value with the target to determine the correct node to find.
    *  @param root - starting element to traverse through. By default, it starts at the tree root.
    *  @returns either the desired `TreeNode` or `undefined`, if not found.
    */
-  nodeByValue(value: U, comp: TreeComparator<T, U> = this.#comp, eq: TreeComparator<T, U> = this.#eq, root = this.root): TreeNode<T> | undefined {
-    if (eq(root, value)) return root
-    if (!root.isLeaf()) {
+  nodeByValue(value: U, root = this.root): TreeNode<T> | undefined {
+    if (this.#eq(root, value)) return root
+    if (!root.leaf) {
       for (const child of root.children) {
-        if (eq(child, value)) return child
-        if (comp(child, value)) return this.nodeByValue(value, comp, eq, child)
+        if (this.#eq(child, value)) return child
+        if (this.#comp(child, value)) return this.nodeByValue(value, child)
       }
     }
     return undefined
@@ -277,20 +309,20 @@ export default class Tree<T, U = T> {
    *  @param traverser - callback to decide whether to traverse downwards to the children.
    *  @param root - starting element to traverse through. By default, it starts at the tree root.
    */
-  remove(value: U, comp: TreeComparator<T, U> = this.#eq, traverser: TreeComparator<T, U> = this.#comp, root = this.root): void {
-    if (comp(root, value)) {
+  remove(value: U, root = this.root, comp: TreeComparator<T, U> = this.#eq, traverser: TreeComparator<T, U> = this.#comp): void {
+    if (this.#eq(root, value)) {
       const parent = root.parent
       if (parent) {
         this.removeMeta(parent, root, parent.children)
       } else {
         this.root = new TreeNode(0, undefined as any)
-        this.counter = 0
+        this.count = 0
       }
-    } else if (!root.isLeaf()) {
+    } else if (!root.leaf) {
       const children = root.children
       for (const child of children) {
-        if (comp(child, value)) this.removeMeta(root, child, children)
-        else if (traverser(child, value)) this.remove(value, comp, traverser, child)
+        if (this.#eq(child, value)) this.removeMeta(root, child, children)
+        else if (this.#comp(child, value)) this.remove(value, child, comp, traverser)
       }
     }
   }
@@ -322,7 +354,7 @@ export default class Tree<T, U = T> {
    *  @param root - starting element to traverse through. By default, it starts at the tree root.
    */
   async traverseAsync(traverser: AsyncTraverser<T>, root = this.root): Promise<void> {
-    if (root.isLeaf()) await traverser(root)
+    if (root.leaf) await traverser(root)
     else {
       const length = root.childCount
       const promises: Promise<void>[] = new Array(length)

@@ -14,16 +14,17 @@ function getComplexDataTree(): Tree<TestPathMetadata, string> {
     (n, v) => v === n.value.path
   )
 
-  tree.addAll(
-    [
-      { path: '/package.json', dir: false, fileCount: 0 },
-      { path: '/a', dir: true, fileCount: 1 },
-      { path: '/a/package.json', dir: false, fileCount: 0 },
-      { path: '/a/b', dir: true, fileCount: 0 }
-    ],
-    (n, v) => v.path.startsWith(n.value.path),
-    (n, v) => v.path === n.value.path
+  tree.onAdd(
+    (n, v) => v.path === n.value.path,
+    (n, v) => v.path.startsWith(n.value.path)
   )
+
+  tree.addAll([
+    { path: '/package.json', dir: false, fileCount: 0 },
+    { path: '/a', dir: true, fileCount: 1 },
+    { path: '/a/package.json', dir: false, fileCount: 0 },
+    { path: '/a/b', dir: true, fileCount: 0 }
+  ])
   return tree
 }
 
@@ -31,7 +32,11 @@ describe('Tree', () => {
   let tree: Tree<number>
 
   beforeEach(() => {
-    tree = new Tree<number>(0, (node, value) => value > node.value)
+    tree = new Tree<number>(
+      0,
+      (node, value) => value > node.value,
+      (node, value) => value === node.value
+    )
   })
 
   describe('TreeNode', () => {
@@ -42,14 +47,14 @@ describe('Tree', () => {
       expect(node.parent).toBeUndefined()
       expect(node.childCount).toBe(0)
       expect(node.children).toEqual([])
-      expect(node.totalCount).toBe(0)
+      expect(node.total).toBe(0)
     })
 
     it('should add children correctly', () => {
       const node = new TreeNode(1, 5)
       node.add(2, 10)
       expect(node.childCount).toBe(1)
-      expect(node.totalCount).toBe(1)
+      expect(node.total).toBe(1)
       expect(node.children[0].value).toBe(10)
       expect(node.children[0].parent).toBe(node)
     })
@@ -60,7 +65,7 @@ describe('Tree', () => {
       node.children[0].add(3, 20)
 
       expect(node.childCount).toBe(1)
-      expect(node.totalCount).toBe(2)
+      expect(node.total).toBe(2)
     })
 
     it('should correctly identify relationships', () => {
@@ -68,12 +73,12 @@ describe('Tree', () => {
       parent.add(2, 10)
       const child = parent.children[0]
 
-      expect(child.isChildOf(parent)).toBe(true)
-      expect(parent.isParentOf(child)).toBe(true)
-      expect(parent.isLeaf()).toBe(false)
-      expect(child.isLeaf()).toBe(true)
-      expect(parent.isRoot()).toBe(true)
-      expect(child.isRoot()).toBe(false)
+      expect(child.childOf(parent)).toBe(true)
+      expect(parent.parentOf(child)).toBe(true)
+      expect(parent.leaf).toBe(false)
+      expect(child.leaf).toBe(true)
+      expect(parent.root).toBe(true)
+      expect(child.root).toBe(false)
     })
 
     it('can distinguish between child and non-child nodes', () => {
@@ -82,13 +87,13 @@ describe('Tree', () => {
       const child = parent.children[0]
       const nonChild = new TreeNode(3, 20)
 
-      expect(child.isChildOf(parent)).toBe(true)
-      expect(parent.isParentOf(child)).toBe(true)
+      expect(child.childOf(parent)).toBe(true)
+      expect(parent.parentOf(child)).toBe(true)
 
-      expect(nonChild.isChildOf(parent)).toBe(false)
-      expect(parent.isParentOf(nonChild)).toBe(false)
+      expect(nonChild.childOf(parent)).toBe(false)
+      expect(parent.parentOf(nonChild)).toBe(false)
 
-      expect(nonChild.isParentOf(child)).toBe(false)
+      expect(nonChild.parentOf(child)).toBe(false)
     })
   })
 
@@ -96,7 +101,7 @@ describe('Tree', () => {
     it('should initialize with root node', () => {
       expect(tree.root.value).toBe(0)
       expect(tree.root.id).toBe(0)
-      expect(tree.counter).toBe(1)
+      expect(tree.count).toBe(1)
     })
 
     it('should add nodes correctly', () => {
@@ -105,8 +110,22 @@ describe('Tree', () => {
       tree.add(7)
 
       expect(tree.root.childCount).toBe(2)
-      expect(tree.counter).toBe(4)
+      expect(tree.count).toBe(4)
       expect(tree.root.children.map(n => n.value)).toEqual([5, 3])
+    })
+
+    it('can redefine the standard comparator functions', () => {
+      tree.comp((node, value) => value < node.value)
+      tree.eq((node, value) => value === node.value)
+
+      // Add comparators are still the same
+      tree.add(5)
+      tree.add(3)
+      tree.add(7)
+
+      expect(tree.has(5)).toBe(true)
+      // Should fail, as we can't reach it anymore with the new comparator
+      expect(tree.has(7)).toBe(false)
     })
 
     it('should not add duplicate values', () => {
@@ -114,14 +133,14 @@ describe('Tree', () => {
       tree.add(5)
 
       expect(tree.root.childCount).toBe(1)
-      expect(tree.counter).toBe(2)
+      expect(tree.count).toBe(2)
     })
 
     it('should not add duplicate root value', () => {
       tree.add(0)
 
       expect(tree.root.childCount).toBe(0)
-      expect(tree.counter).toBe(1)
+      expect(tree.count).toBe(1)
     })
 
     it('can add multiple values at once', () => {
@@ -129,8 +148,8 @@ describe('Tree', () => {
       for (let i = 0; i < 100; i++) array.push(i)
       tree.addAll(array)
 
-      let counter = 0
-      for (const node of tree) expect(node.value).toBe(counter++)
+      let count = 0
+      for (const node of tree) expect(node.value).toBe(count++)
     })
   })
 
@@ -160,7 +179,7 @@ describe('Tree', () => {
       tree.remove(5)
       expect(tree.root.childCount).toBe(1)
       expect(tree.root.children[0].value).toEqual(3)
-      expect(tree.counter).toBe(2)
+      expect(tree.count).toBe(2)
     })
 
     it('removes leaves starting', () => {
@@ -170,7 +189,7 @@ describe('Tree', () => {
 
       tree.remove(7)
       expect(tree.root.childCount).toBe(2)
-      expect(tree.counter).toBe(3)
+      expect(tree.count).toBe(3)
     })
 
     it('removes leaves starting from a leaf', () => {
@@ -180,18 +199,18 @@ describe('Tree', () => {
 
       tree.remove(
         7,
+        tree.node(3),
         (n, v) => n.value === v,
-        (n, v) => v > n.value,
-        tree.node(3)
+        (n, v) => v > n.value
       )
       expect(tree.root.childCount).toBe(2)
-      expect(tree.counter).toBe(3)
+      expect(tree.count).toBe(3)
     })
 
     it('can remove the root', () => {
       tree.remove(0)
       expect(tree.root.value).toBeUndefined()
-      expect(tree.counter).toBe(0)
+      expect(tree.count).toBe(0)
     })
 
     it('can remove complex data with primitive data', () => {
@@ -233,15 +252,55 @@ describe('Tree', () => {
       expect(tree.branch('/c')).toEqual([])
       expect(tree.branch('/a/b/c')).toEqual([])
     })
+
+    it('can retrieve a branch starting from a sub-root', () => {
+      tree.add(9)
+      tree.add(3)
+      tree.add(4)
+      tree.add(6)
+      tree.add(5)
+
+      // Full branch: 0 -> 3 -> 4 -> 5
+      expect(tree.branch(5, tree.nodeByValue(3))).toEqual([3, 4, 5])
+      expect(tree.branch(5, tree.nodeByValue(5))).toEqual([5])
+    })
+
+    describe('All', () => {
+      it('acts the same like branch on leaf element', () => {
+        tree.add(9)
+        tree.add(3)
+        tree.add(4)
+        tree.add(6)
+        tree.add(5)
+
+        // Full branch: 0 -> 3 -> 4 -> 5
+        expect(tree.branchAll(5)).toEqual([0, 3, 4, 5])
+        expect(tree.branchAll(5, tree.nodeByValue(3))).toEqual([3, 4, 5])
+        expect(tree.branchAll(9)).toEqual([0, 9])
+        expect(tree.branchAll(9, tree.nodeByValue(9))).toEqual([9])
+      })
+
+      it('fetches all underlying child nodes when the value has already been found', () => {
+        tree.add(9)
+        tree.add(3)
+        tree.add(4)
+        tree.add(6)
+        tree.add(5)
+
+        // Full branch: 0 -> 3 -> 4 -> [5, 6]
+        expect(tree.branchAll(3)).toEqual([0, 3, 4, 6, 5])
+        expect(tree.branchAll(7)).toEqual([])
+      })
+    })
   })
 
   describe('Iterator', () => {
     it('recursively iterates through all nodes of the tree', () => {
       for (let i = 1; i < 10; i++) tree.add(i)
 
-      let counter = 0
+      let count = 0
       for (const node of tree) {
-        expect(node.value).toBe(counter++)
+        expect(node.value).toBe(count++)
       }
     })
   })
@@ -316,7 +375,7 @@ describe('Tree', () => {
 
       expect(parsedTree.root.value).toEqual(zeroTree.root.value)
       expect(parsedTree.root.childCount).toBe(zeroTree.root.childCount)
-      expect(parsedTree.counter).toBe(zeroTree.counter)
+      expect(parsedTree.count).toBe(zeroTree.count)
     })
 
     it('should parse simple stringified content back', () => {
@@ -327,7 +386,7 @@ describe('Tree', () => {
 
       expect(parsedTree.root.value).toEqual(tree.root.value)
       expect(parsedTree.root.childCount).toBe(tree.root.childCount)
-      expect(parsedTree.counter).toBe(tree.counter)
+      expect(parsedTree.count).toBe(tree.count)
     })
 
     it('should parse complex stringified content back', () => {
@@ -335,11 +394,13 @@ describe('Tree', () => {
 
       const parsedContent = JSON.parse(tree.toJSON())
       const parsedTree = new Tree(parsedContent[0])
-      parsedTree.addAll(
-        parsedContent,
-        (n, v) => v.path.startsWith(n.value.path),
-        (n, v) => v.path === n.value.path
+
+      parsedTree.onAdd(
+        (n, v) => v.path === n.value.path,
+        (n, v) => v.path.startsWith(n.value.path)
       )
+
+      parsedTree.addAll(parsedContent)
 
       expect(tree.toJSON()).toBe(parsedTree.toJSON())
       expect(JSON.parse(tree.toJSON())).toEqual(JSON.parse(parsedTree.toJSON()))

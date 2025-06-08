@@ -22,7 +22,7 @@ declare module 'mini-tree' {
     /**
      *  The amount of total children over any underlying levels.
      */
-    totalCount: number
+    total: number
     /**
      *  Array holding the children.
      */
@@ -53,26 +53,26 @@ declare module 'mini-tree' {
      * @param node - potential parent node.
      * @returns `true`, if the given node is the actual parent node of the current node, otherwise `false`.
      */
-    isChildOf(node: TreeNode<T>): boolean
+    childOf(node: TreeNode<T>): boolean
     /**
      *  Checks if the current node is a leaf of th tree, i.e. not having any children.
      *
      * @returns `true`, if the node doesn't have any children, otherwise `false`.
      */
-    isLeaf(): boolean
+    get leaf(): boolean
     /**
      *  Checks if the given node is a child of the current node.
      *
      * @param node - potential child node.
      * @returns `true`, if the current node is the parent of the given node, otherwise `false`.
      */
-    isParentOf(node: TreeNode<T>): boolean
+    parentOf(node: TreeNode<T>): boolean
     /**
      *  Checks if the node is the root element of the tree, i.e. not having any parents.
      *
      * @returns `true`, if the node is the actual root of the tree, otherwise `false`.
      */
-    isRoot(): boolean
+    get root(): boolean
   }
   /**
    *  Generic tree structure for all sorts of purposes.
@@ -81,7 +81,7 @@ declare module 'mini-tree' {
     /**
      *  The number of nodes inside the tree.
      */
-    counter: number
+    count: number
     /**
      *  The root element of the tree.
      */
@@ -94,20 +94,16 @@ declare module 'mini-tree' {
      *  Adds a new node to the tree.
      *
      *  @param value - target value to insert.
-     *  @param traverser - callback mapping the target value to a node value to check for further traversal.
-     *  @param eq - callback checking if the target value is equal to a node value. If it's equal, it will cancel the process.
      *  @param root - starting element to traverse through. By default, it starts at the tree root.
      */
-    add(value: T, traverser?: TreeComparator<T, T>, eq?: TreeComparator<T, T>, root?: TreeNode<T>): void
+    add(value: T, root?: TreeNode<T>): void
     /**
      *  Adds an array of new nodes to the tree.
      *
      *  @param values - array holding the target values to insert.
-     *  @param traverser - callback mapping the target value to a node value to check for further traversal.
-     *  @param eq - callback checking if the target value is equal to a node value. If it's equal, it will cancel the process.
      *  @param root - starting element to traverse through. By default, it starts at the tree root.
      */
-    addAll(values: T[], traverser: TreeComparator<T, T>, eq: TreeComparator<T, T>, root): void
+    addAll(values: T[], root?: TreeNode<T>): void
     /**
      *  Traverses the tree with an asynchronous traverser with the added optimization of running all children parallel.
      *
@@ -119,22 +115,27 @@ declare module 'mini-tree' {
      *  Removes a node from the tree chosen by a given remover callback. If a targeted node is a branch, the rest of the branch will be removed as well.
      *
      *  @param value - value to remove.
+     *  @param root - starting element to traverse through. By default, it starts at the tree root.
      *  @param comp - comparator callback to compare the node value with the target value with.
      *  @param traverser - callback to decide whether to traverse downwards to the children.
-     *  @param root - starting element to traverse through. By default, it starts at the tree root.
      */
-    remove(value: U, comp?: TreeComparator<T, U>, traverser?: TreeComparator<T, U>, root?: TreeNode<T>): void
+    remove(value: U, root?: TreeNode<T>, comp?: TreeComparator<T, U>, traverser?: TreeComparator<T, U>): void
     /**
      *  Extracts the values from a branch that matches the target value as close as possible.
      *
      *  @param targetValue - value to search for.
-     *  @param comp - callback to decide whether to traverse downwards to the children.
      *  @param root - starting element to traverse through. By default, it starts at the tree root.
-     *  @param store - array holding the values. New values will be pushed onto it. By default, a new array with
-     *  the root element will be created.
      *  @returns the values of the branch leading towards the targeted value. If the value couldn't be found at all, it will return an empty array.
      */
-    branch(targetValue: U, comp?: TreeComparator<T, U>, root?: TreeNode<T>, store?: T[]): T[]
+    branch(targetValue: U, root?: TreeNode<T>): T[]
+    /**
+     *  Extracts the values from a branch that leads to the target value including all its children.
+     *
+     *  @param targetValue - value to search for.
+     *  @param root - starting element to traverse through. By default, it starts at the tree root.
+     *  @returns the values of the branch leading towards the targeted value. If the value couldn't be found at all, it will return an empty array.
+     */
+    branchAll(targetValue: U, root?: TreeComparator<T, U>): T[]
     /**
      *  Finds a node by its id. Ids are an internally incremented number.
      *
@@ -146,28 +147,26 @@ declare module 'mini-tree' {
      *  Finds a node by a given search value. It's particularly useful for getting an inner node to act as a sub-tree root for sub-tree operations.
      *
      *  @param value - target search value
-     *  @param comp - comparator callback to compare the node value with the target value with for further traversal.
-     *  @param eq - equality callback to compare the node value with the target to determine the correct node to find.
      *  @param root - starting element to traverse through. By default, it starts at the tree root.
      *  @returns either the desired `TreeNode` or `undefined`, if not found.
      */
-    nodeByValue(value: U, comp: TreeComparator<T, U>, eq: TreeComparator<T, U>, root): TreeNode<T> | undefined
+    nodeByValue(value: U, root?: TreeNode<T>): TreeNode<T> | undefined
     /**
      *  Checks if a specific value exists inside the tree.
      *
      *  @param value - target value.
+     *  @param root - starting element to traverse through. By default, it starts at the tree root.
      *  @param comp - comparator callback to compare the node value with the target value with for further traversal.
      *  @param traverser - callback to decide whether to traverse downwards to the children.
-     *  @param root - starting element to traverse through. By default, it starts at the tree root.
      *  @returns `true`, if the tree has the value, otherwise `false`.
      */
-    has(value: U, comp?: TreeComparator<T, U>, traverser?: TreeComparator<T, U>, root?: TreeNode<T>): boolean
+    has(value: U, root?: TreeNode<T>, comp?: TreeComparator<T, U>, traverser?: TreeComparator<T, U>): boolean
     [Symbol.iterator](): Iterator<TreeNode<T>>
     /**
-    *  Converts the held values into a json-viable string.
-    *
-    *  @returns the json-viable string of only the values of the nodes.
-    */
+     *  Converts the held values into a json-viable string.
+     *
+     *  @returns the json-viable string of only the values of the nodes.
+     */
     toJSON(): string
   }
 }

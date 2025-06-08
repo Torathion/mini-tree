@@ -1,5 +1,30 @@
 # CHANGELOG
 
+## [2.0.0] 06-08-2025
+
+### BREAKING:
+
+- Restricted callback definition.
+    - Callback definitions have been moved to new functions `eq`, `comp` and `onAdd`, while also remaining in the constructor.
+    - Methods have less parameters to allow sub-root operations.
+    - Custom callback definitions still remain in search functions `remove` and `has`.
+- Shortened syntax of properties and functions:
+    - `node.totalCount` -> `node.total`
+    - `node.isChildOf(node2)` -> `node.childOf(node2)`
+    - `node.isParentOf(node2)` -> `node.parentOf(node2)`
+    - `node.isLeaf()` -> `node.leaf`
+    - `node.isRoot()` -> `node.root`
+    - `tree.counter` -> `tree.count`
+
+### Added
+
+- `tree.branchAll()` as alternative to `tree.branch()` to also fetch all child nodes of the target value node.
+
+### Fixed
+
+-  `tree.branch()` better detects target value leaf nodes now.
+-  `root` being required as parameter in `addAll` and `nodeByValue`.
+
 ## [1.2.0] 03-30-2025
 
 - Add `toJSON` to persist the tree.
