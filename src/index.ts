@@ -34,7 +34,7 @@ export class TreeNode<T> {
   /**
    *  The amount of total children over any underlying levels.
    */
-  totalCount: number
+  total: number
   /**
    *  The actual value this node holds.
    */
@@ -45,7 +45,7 @@ export class TreeNode<T> {
     this.value = value
     this.parent = parent
     this.children = []
-    this.childCount = this.totalCount = 0
+    this.childCount = this.total = 0
   }
 
   /**
@@ -59,7 +59,7 @@ export class TreeNode<T> {
     this.childCount++
     let parent: TreeNode<T> | undefined = this
     while (parent) {
-      parent.totalCount++
+      parent.total++
       parent = parent.parent
     }
   }
@@ -70,7 +70,7 @@ export class TreeNode<T> {
    * @param node - potential parent node.
    * @returns `true`, if the given node is the actual parent node of the current node, otherwise `false`.
    */
-  isChildOf(node: TreeNode<T>): boolean {
+  childOf(node: TreeNode<T>): boolean {
     return this.parent?.id === node.id
   }
 
@@ -79,7 +79,7 @@ export class TreeNode<T> {
    *
    * @returns `true`, if the node doesn't have any children, otherwise `false`.
    */
-  isLeaf(): boolean {
+  get leaf(): boolean {
     return !this.childCount
   }
 
@@ -89,7 +89,7 @@ export class TreeNode<T> {
    * @param node - potential child node.
    * @returns `true`, if the current node is the parent of the given node, otherwise `false`.
    */
-  isParentOf(node: TreeNode<T>): boolean {
+  parentOf(node: TreeNode<T>): boolean {
     const childCount = this.childCount
     if (!childCount) return false
     for (let children = this.children, i = 0, id = node.id; i < childCount; i++) if (children[i].id === id) return true
@@ -101,7 +101,7 @@ export class TreeNode<T> {
    *
    * @returns `true`, if the node is the actual root of the tree, otherwise `false`.
    */
-  isRoot(): boolean {
+  get root(): boolean {
     return !this.parent
   }
 }
@@ -120,27 +120,27 @@ export default class Tree<T, U = T> {
   /**
    *  The number of nodes inside the tree.
    */
-  counter: number
+  count: number
   /**
    *  The root element of the tree.
    */
   root: TreeNode<T>
 
   constructor(rootValue: T, comp: TreeComparator<T, U> = defaultComp, eq: TreeComparator<T, U> = defaultEq) {
-    this.counter = 0
-    this.root = new TreeNode(this.counter++, rootValue)
+    this.count = 0
+    this.root = new TreeNode(this.count++, rootValue)
     this.#addComp = this.#comp = comp as any
     this.#addEq = this.#eq = eq as any
   }
 
   private removeMeta(root: TreeNode<T>, child: TreeNode<T>, children: TreeNode<T>[]): void {
     children.splice(children.indexOf(child), 1)
-    this.counter -= child.totalCount + 1
+    this.count -= child.total + 1
     root.childCount--
 
     let parent: TreeNode<T> | undefined = root
     while (parent) {
-      parent.totalCount -= child.totalCount
+      parent.total -= child.total
       parent = parent.parent
     }
   }
@@ -153,7 +153,7 @@ export default class Tree<T, U = T> {
    */
   add(value: T, root = this.root): void {
     if (this.#addEq(root, value)) return
-    if (!root.isLeaf()) {
+    if (!root.leaf) {
       for (const child of root.children) {
         if (this.#addEq(child, value)) return
         if (this.#addComp(child, value)) {
@@ -162,7 +162,7 @@ export default class Tree<T, U = T> {
         }
       }
     }
-    root.add(this.counter++, value)
+    root.add(this.count++, value)
   }
 
   /**
@@ -185,9 +185,9 @@ export default class Tree<T, U = T> {
    *  @returns the values of the branch leading towards the targeted value. If the value couldn't be found at all, it will return an empty array.
    */
   branch(targetValue: U, root = this.root, store: T[] = [root.value]): T[] {
-    if (!root.isLeaf()) {
+    if (!root.leaf) {
       for (const child of root.children) {
-        if (child.isLeaf() && this.#eq(child, targetValue)) {
+        if (child.leaf && this.#eq(child, targetValue)) {
           store.push(child.value)
           return store
         }
@@ -212,17 +212,17 @@ export default class Tree<T, U = T> {
    *  @returns the values of the branch leading towards the targeted value. If the value couldn't be found at all, it will return an empty array.
    */
   branchAll(targetValue: U, root = this.root, store: T[] = [root.value], found = false): T[] {
-    if (!root.isLeaf()) {
+    if (!root.leaf) {
       for (const child of root.children) {
         if (found) {
           store.push(child.value)
-          if (child.isLeaf()) continue
+          if (child.leaf) continue
           return this.branchAll(targetValue, child, store, found)
         }
         if (this.#eq(child, targetValue)) {
           found = true
           store.push(child.value)
-          return child.isLeaf() ? store : this.branchAll(targetValue, child, store, found)
+          return child.leaf ? store : this.branchAll(targetValue, child, store, found)
         }
         if (this.#comp(child, targetValue)) {
           store.push(child.value)
@@ -260,7 +260,7 @@ export default class Tree<T, U = T> {
    */
   has(value: U, root = this.root, eq: TreeComparator<T, U> = this.#eq, comp: TreeComparator<T, U> = this.#comp): boolean {
     if (this.#eq(root, value)) return true
-    if (!root.isLeaf()) {
+    if (!root.leaf) {
       for (const child of root.children) {
         if (this.#eq(child, value)) return true
         if (this.#comp(child, value)) return this.has(value, child, eq, comp)
@@ -292,7 +292,7 @@ export default class Tree<T, U = T> {
    */
   nodeByValue(value: U, root = this.root): TreeNode<T> | undefined {
     if (this.#eq(root, value)) return root
-    if (!root.isLeaf()) {
+    if (!root.leaf) {
       for (const child of root.children) {
         if (this.#eq(child, value)) return child
         if (this.#comp(child, value)) return this.nodeByValue(value, child)
@@ -316,9 +316,9 @@ export default class Tree<T, U = T> {
         this.removeMeta(parent, root, parent.children)
       } else {
         this.root = new TreeNode(0, undefined as any)
-        this.counter = 0
+        this.count = 0
       }
-    } else if (!root.isLeaf()) {
+    } else if (!root.leaf) {
       const children = root.children
       for (const child of children) {
         if (this.#eq(child, value)) this.removeMeta(root, child, children)
@@ -354,7 +354,7 @@ export default class Tree<T, U = T> {
    *  @param root - starting element to traverse through. By default, it starts at the tree root.
    */
   async traverseAsync(traverser: AsyncTraverser<T>, root = this.root): Promise<void> {
-    if (root.isLeaf()) await traverser(root)
+    if (root.leaf) await traverser(root)
     else {
       const length = root.childCount
       const promises: Promise<void>[] = new Array(length)

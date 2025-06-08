@@ -22,7 +22,7 @@ declare module 'mini-tree' {
     /**
      *  The amount of total children over any underlying levels.
      */
-    totalCount: number
+    total: number
     /**
      *  Array holding the children.
      */
@@ -53,26 +53,26 @@ declare module 'mini-tree' {
      * @param node - potential parent node.
      * @returns `true`, if the given node is the actual parent node of the current node, otherwise `false`.
      */
-    isChildOf(node: TreeNode<T>): boolean
+    childOf(node: TreeNode<T>): boolean
     /**
      *  Checks if the current node is a leaf of th tree, i.e. not having any children.
      *
      * @returns `true`, if the node doesn't have any children, otherwise `false`.
      */
-    isLeaf(): boolean
+    get leaf(): boolean
     /**
      *  Checks if the given node is a child of the current node.
      *
      * @param node - potential child node.
      * @returns `true`, if the current node is the parent of the given node, otherwise `false`.
      */
-    isParentOf(node: TreeNode<T>): boolean
+    parentOf(node: TreeNode<T>): boolean
     /**
      *  Checks if the node is the root element of the tree, i.e. not having any parents.
      *
      * @returns `true`, if the node is the actual root of the tree, otherwise `false`.
      */
-    isRoot(): boolean
+    get root(): boolean
   }
   /**
    *  Generic tree structure for all sorts of purposes.
@@ -81,7 +81,7 @@ declare module 'mini-tree' {
     /**
      *  The number of nodes inside the tree.
      */
-    counter: number
+    count: number
     /**
      *  The root element of the tree.
      */
