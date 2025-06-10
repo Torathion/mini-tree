@@ -211,7 +211,7 @@ export default class Tree<T, U = T> {
    *  @param found - flag indicating whether the target value has already been found.
    *  @returns the values of the branch leading towards the targeted value. If the value couldn't be found at all, it will return an empty array.
    */
-  branchAll(targetValue: U, root = this.root, store: T[] = [root.value], found = false): T[] {
+  branchAll(targetValue: U, root = this.root, store: T[] = [root.value], found = this.#eq(root, targetValue)): T[] {
     if (!root.leaf) {
       for (const child of root.children) {
         if (found) {

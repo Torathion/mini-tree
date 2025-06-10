@@ -304,6 +304,11 @@ describe('Tree', () => {
         expect(tree.branchAll(3)).toEqual([0, 3, 4, 6, 5])
         expect(tree.branchAll(7)).toEqual([])
       })
+
+      it('can be found immediately', () => {
+        // A node that only has two child nodes should still get all.
+        expect(tree.branchAll(4, tree.nodeByValue(4))).toEqual([4, 6, 5])
+      })
     })
   })
 
