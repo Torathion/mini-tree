@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import Tree, { TreeNode, type AsyncTraverser } from '../src'
+import { afterEach } from 'vitest'
 
 interface TestPathMetadata {
   path: string
@@ -95,6 +96,18 @@ describe('Tree', () => {
 
       expect(nonChild.parentOf(child)).toBe(false)
     })
+  })
+
+  it('can be cleared', () => {
+    for (let i = 0; i < 10; i++) tree.add(i)
+
+    expect(tree.count).toBeGreaterThan(0)
+    expect(tree.root.children.length).toBeGreaterThan(0)
+
+    tree.clear()
+
+    expect(tree.count).toBe(1)
+    expect(tree.root.children).toEqual([])
   })
 
   describe('Tree construction and addition', () => {
@@ -266,13 +279,19 @@ describe('Tree', () => {
     })
 
     describe('All', () => {
-      it('acts the same like branch on leaf element', () => {
+      beforeEach(() => {
         tree.add(9)
         tree.add(3)
         tree.add(4)
         tree.add(6)
         tree.add(5)
+      })
 
+      afterEach(() => {
+        tree.clear()
+      })
+
+      it('acts the same like branch on leaf element', () => {
         // Full branch: 0 -> 3 -> 4 -> 5
         expect(tree.branchAll(5)).toEqual([0, 3, 4, 5])
         expect(tree.branchAll(5, tree.nodeByValue(3))).toEqual([3, 4, 5])
@@ -281,12 +300,6 @@ describe('Tree', () => {
       })
 
       it('fetches all underlying child nodes when the value has already been found', () => {
-        tree.add(9)
-        tree.add(3)
-        tree.add(4)
-        tree.add(6)
-        tree.add(5)
-
         // Full branch: 0 -> 3 -> 4 -> [5, 6]
         expect(tree.branchAll(3)).toEqual([0, 3, 4, 6, 5])
         expect(tree.branchAll(7)).toEqual([])

@@ -233,6 +233,14 @@ export default class Tree<T, U = T> {
     return found || this.#eq(root, targetValue) ? store : []
   }
 
+  /**
+   *  Clears the entire tree and resets its state, while comparators remain.
+   */
+  clear(): void {
+    this.count = 0
+    this.root = new TreeNode(this.count++, this.root.value)
+  }
+
   comp(callback: TreeComparator<T, U>): this {
     this.#comp = callback
     return this

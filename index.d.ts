@@ -137,6 +137,10 @@ declare module 'mini-tree' {
      */
     branchAll(targetValue: U, root?: TreeComparator<T, U>): T[]
     /**
+     *  Clears the entire tree and resets its state, while comparators remain.
+     */
+    clear(): void
+    /**
      *  Finds a node by its id. Ids are an internally incremented number.
      *
      *  @param id - internal id of the targeted node.
