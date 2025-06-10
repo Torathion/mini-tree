@@ -24,6 +24,10 @@ declare module 'mini-tree' {
      */
     total: number
     /**
+     *  Describes how many nodes deep the node is inside the tree.
+     */
+    level: number
+    /**
      *  Array holding the children.
      */
     children: TreeNode<T>[]

@@ -60,6 +60,18 @@ describe('Tree', () => {
       expect(node.children[0].parent).toBe(node)
     })
 
+    it('has a level', () => {
+      const nodeTree = new Tree(
+        0,
+        (node, value) => value > node.value,
+        (node, value) => value === node.value
+      )
+      expect(nodeTree.root.level).toBe(0)
+
+      nodeTree.add(1)
+      expect(nodeTree.root.children[0].level).toBe(1)
+    })
+
     it('recursively tracks the number of children', () => {
       const node = new TreeNode(1, 5)
       node.add(2, 10)

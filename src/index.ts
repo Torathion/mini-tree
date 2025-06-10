@@ -36,6 +36,10 @@ export class TreeNode<T> {
    */
   total: number
   /**
+   *  Describes how many nodes deep the node is inside the tree.
+   */
+  level: number
+  /**
    *  The actual value this node holds.
    */
   readonly value: T
@@ -46,6 +50,7 @@ export class TreeNode<T> {
     this.parent = parent
     this.children = []
     this.childCount = this.total = 0
+    this.level = parent ? parent.level + 1 : 0
   }
 
   /**
