@@ -310,6 +310,32 @@ describe('Tree', () => {
         expect(tree.branchAll(4, tree.nodeByValue(4))).toEqual([4, 6, 5])
       })
     })
+
+    describe('Sub', () => {
+      beforeEach(() => {
+        tree.add(9)
+        tree.add(3)
+        tree.add(4)
+        tree.add(6)
+        tree.add(5)
+      })
+
+      afterEach(() => {
+        tree.clear()
+      })
+
+      it('should work like a shortcut to branchAll', () => {
+        expect(tree.sub(4)).toEqual(tree.branchAll(4, tree.nodeByValue(4)))
+        // Invalid
+        expect(tree.sub(7)).toEqual(tree.branchAll(7, tree.nodeByValue(7)))
+        // Root
+        expect(tree.sub(0)).toEqual(tree.branchAll(0, tree.nodeByValue(0)))
+      })
+
+      it('only retrieves all children no matter the level on withRoot = false', () => {
+        expect(tree.sub(4, false)).toEqual(tree.branchAll(4, tree.nodeByValue(4)).slice(1))
+      })
+    })
   })
 
   describe('Iterator', () => {

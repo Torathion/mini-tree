@@ -160,6 +160,14 @@ declare module 'mini-tree' {
      */
     branchAll(targetValue: U, root?: TreeNode<T>): T[]
     /**
+     *  Efficiently fetches all data from a sub tree starting from the target value as new root.
+     *
+     *  @param value - the target value to be the new root
+     *  @param withRoot - flag indicating whether to include the root value (Default: true)
+     *  @returns all values of the sub tree in a list.
+     */
+    sub(value: U, withRoot?: boolean): T[]
+    /**
      *  Clears the entire tree and resets its state, while comparators remain.
      */
     clear(): void

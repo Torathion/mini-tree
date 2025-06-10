@@ -234,6 +234,26 @@ export default class Tree<T, U = T> {
   }
 
   /**
+   *  Efficiently fetches all data from a sub tree starting from the target value as new root.
+   *
+   *  @param value - the target value to be the new root
+   *  @param withRoot - flag indicating whether to include the root value (Default: true)
+   *  @param root - the current root of the recursion
+   *  @param store - the store for the recursions to collect all node values in.
+   *  @returns all values of the sub tree in a list.
+   */
+  sub(value: U, withRoot = true, root = this.nodeByValue(value), store: T[] = withRoot && root ? [root.value] : []): T[] {
+    if (!root) return []
+    if (!root.leaf) {
+      for (const child of root.children) {
+        store.push(child.value)
+        this.sub(value, withRoot, child, store)
+      }
+    }
+    return store
+  }
+
+  /**
    *  Clears the entire tree and resets its state, while comparators remain.
    */
   clear(): void {
