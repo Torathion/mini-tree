@@ -135,7 +135,7 @@ declare module 'mini-tree' {
      *  @param root - starting element to traverse through. By default, it starts at the tree root.
      *  @returns the values of the branch leading towards the targeted value. If the value couldn't be found at all, it will return an empty array.
      */
-    branchAll(targetValue: U, root?: TreeComparator<T, U>): T[]
+    branchAll(targetValue: U, root?: TreeNode<T>): T[]
     /**
      *  Clears the entire tree and resets its state, while comparators remain.
      */
