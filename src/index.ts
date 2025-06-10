@@ -241,16 +241,36 @@ export default class Tree<T, U = T> {
     this.root = new TreeNode(this.count++, this.root.value)
   }
 
+  /**
+   *  Defines the default comparator for tree traversal indicating whether to move further down the tree.
+   *
+   *  @param callback - callback defining how to validate further traversal.
+   *  @returns the current instance
+   */
   comp(callback: TreeComparator<T, U>): this {
     this.#comp = callback
     return this
   }
 
+  /**
+   *  Defines the default comparator for node existence. If true, the current root of the tree traversal is the desired value.
+   *  It is used in search algorithms.
+   *
+   *  @param callback - callback defining how to validate node existence.
+   *  @returns the current instance
+   */
   eq(callback: TreeComparator<T, U>): this {
     this.#eq = callback
     return this
   }
 
+  /**
+   *  Defines the callbacks for node existence (addEq) and further traversal (addComp) when adding new values.
+   *
+   *  @param addEq - callback defining how to validate node existence.
+   *  @param addComp - callback defining how to validate further traversal.
+   *  @returns the current instance
+   */
   onAdd(addEq: TreeComparator<T, T>, addComp: TreeComparator<T, T>): this {
     this.#addEq = addEq
     this.#addComp = addComp
