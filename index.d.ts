@@ -24,6 +24,10 @@ declare module 'mini-tree' {
      */
     total: number
     /**
+     *  Describes how many nodes deep the node is inside the tree.
+     */
+    level: number
+    /**
      *  Array holding the children.
      */
     children: TreeNode<T>[]
@@ -121,6 +125,29 @@ declare module 'mini-tree' {
      */
     remove(value: U, root?: TreeNode<T>, comp?: TreeComparator<T, U>, traverser?: TreeComparator<T, U>): void
     /**
+     *  Defines the default comparator for tree traversal indicating whether to move further down the tree.
+     *
+     *  @param callback - callback defining how to validate further traversal.
+     *  @returns the current instance
+     */
+    comp(callback: TreeComparator<T, U>): this
+    /**
+     *  Defines the default comparator for node existence. If true, the current root of the tree traversal is the desired value.
+     *  It is used in search algorithms.
+     *
+     *  @param callback - callback defining how to validate node existence.
+     *  @returns the current instance
+     */
+    eq(callback: TreeComparator<T, U>): this
+    /**
+     *  Defines the callbacks for node existence (addEq) and further traversal (addComp) when adding new values.
+     *
+     *  @param addEq - callback defining how to validate node existence.
+     *  @param addComp - callback defining how to validate further traversal.
+     *  @returns the current instance
+     */
+    onAdd(addEq: TreeComparator<T, T>, addComp: TreeComparator<T, T>): this
+    /**
      *  Extracts the values from a branch that matches the target value as close as possible.
      *
      *  @param targetValue - value to search for.
@@ -135,7 +162,19 @@ declare module 'mini-tree' {
      *  @param root - starting element to traverse through. By default, it starts at the tree root.
      *  @returns the values of the branch leading towards the targeted value. If the value couldn't be found at all, it will return an empty array.
      */
-    branchAll(targetValue: U, root?: TreeComparator<T, U>): T[]
+    branchAll(targetValue: U, root?: TreeNode<T>): T[]
+    /**
+     *  Efficiently fetches all data from a sub tree starting from the target value as new root.
+     *
+     *  @param value - the target value to be the new root
+     *  @param withRoot - flag indicating whether to include the root value (Default: true)
+     *  @returns all values of the sub tree in a list.
+     */
+    sub(value: U, withRoot?: boolean): T[]
+    /**
+     *  Clears the entire tree and resets its state, while comparators remain.
+     */
+    clear(): void
     /**
      *  Finds a node by its id. Ids are an internally incremented number.
      *

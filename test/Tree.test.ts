@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import Tree, { TreeNode, type AsyncTraverser } from '../src'
+import { afterEach } from 'vitest'
 
 interface TestPathMetadata {
   path: string
@@ -59,6 +60,18 @@ describe('Tree', () => {
       expect(node.children[0].parent).toBe(node)
     })
 
+    it('has a level', () => {
+      const nodeTree = new Tree(
+        0,
+        (node, value) => value > node.value,
+        (node, value) => value === node.value
+      )
+      expect(nodeTree.root.level).toBe(0)
+
+      nodeTree.add(1)
+      expect(nodeTree.root.children[0].level).toBe(1)
+    })
+
     it('recursively tracks the number of children', () => {
       const node = new TreeNode(1, 5)
       node.add(2, 10)
@@ -95,6 +108,18 @@ describe('Tree', () => {
 
       expect(nonChild.parentOf(child)).toBe(false)
     })
+  })
+
+  it('can be cleared', () => {
+    for (let i = 0; i < 10; i++) tree.add(i)
+
+    expect(tree.count).toBeGreaterThan(0)
+    expect(tree.root.children.length).toBeGreaterThan(0)
+
+    tree.clear()
+
+    expect(tree.count).toBe(1)
+    expect(tree.root.children).toEqual([])
   })
 
   describe('Tree construction and addition', () => {
@@ -266,13 +291,19 @@ describe('Tree', () => {
     })
 
     describe('All', () => {
-      it('acts the same like branch on leaf element', () => {
+      beforeEach(() => {
         tree.add(9)
         tree.add(3)
         tree.add(4)
         tree.add(6)
         tree.add(5)
+      })
 
+      afterEach(() => {
+        tree.clear()
+      })
+
+      it('acts the same like branch on leaf element', () => {
         // Full branch: 0 -> 3 -> 4 -> 5
         expect(tree.branchAll(5)).toEqual([0, 3, 4, 5])
         expect(tree.branchAll(5, tree.nodeByValue(3))).toEqual([3, 4, 5])
@@ -281,15 +312,40 @@ describe('Tree', () => {
       })
 
       it('fetches all underlying child nodes when the value has already been found', () => {
+        // Full branch: 0 -> 3 -> 4 -> [5, 6]
+        expect(tree.branchAll(3)).toEqual([0, 3, 4, 6, 5])
+        expect(tree.branchAll(7)).toEqual([])
+      })
+
+      it('can be found immediately', () => {
+        // A node that only has two child nodes should still get all.
+        expect(tree.branchAll(4, tree.nodeByValue(4))).toEqual([4, 6, 5])
+      })
+    })
+
+    describe('Sub', () => {
+      beforeEach(() => {
         tree.add(9)
         tree.add(3)
         tree.add(4)
         tree.add(6)
         tree.add(5)
+      })
 
-        // Full branch: 0 -> 3 -> 4 -> [5, 6]
-        expect(tree.branchAll(3)).toEqual([0, 3, 4, 6, 5])
-        expect(tree.branchAll(7)).toEqual([])
+      afterEach(() => {
+        tree.clear()
+      })
+
+      it('should work like a shortcut to branchAll', () => {
+        expect(tree.sub(4)).toEqual(tree.branchAll(4, tree.nodeByValue(4)))
+        // Invalid
+        expect(tree.sub(7)).toEqual(tree.branchAll(7, tree.nodeByValue(7)))
+        // Root
+        expect(tree.sub(0)).toEqual(tree.branchAll(0, tree.nodeByValue(0)))
+      })
+
+      it('only retrieves all children no matter the level on withRoot = false', () => {
+        expect(tree.sub(4, false)).toEqual(tree.branchAll(4, tree.nodeByValue(4)).slice(1))
       })
     })
   })

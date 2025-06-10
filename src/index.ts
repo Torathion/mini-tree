@@ -36,6 +36,10 @@ export class TreeNode<T> {
    */
   total: number
   /**
+   *  Describes how many nodes deep the node is inside the tree.
+   */
+  level: number
+  /**
    *  The actual value this node holds.
    */
   readonly value: T
@@ -46,6 +50,7 @@ export class TreeNode<T> {
     this.parent = parent
     this.children = []
     this.childCount = this.total = 0
+    this.level = parent ? parent.level + 1 : 0
   }
 
   /**
@@ -211,7 +216,7 @@ export default class Tree<T, U = T> {
    *  @param found - flag indicating whether the target value has already been found.
    *  @returns the values of the branch leading towards the targeted value. If the value couldn't be found at all, it will return an empty array.
    */
-  branchAll(targetValue: U, root = this.root, store: T[] = [root.value], found = false): T[] {
+  branchAll(targetValue: U, root = this.root, store: T[] = [root.value], found = this.#eq(root, targetValue)): T[] {
     if (!root.leaf) {
       for (const child of root.children) {
         if (found) {
@@ -233,16 +238,64 @@ export default class Tree<T, U = T> {
     return found || this.#eq(root, targetValue) ? store : []
   }
 
+  /**
+   *  Efficiently fetches all data from a sub tree starting from the target value as new root.
+   *
+   *  @param value - the target value to be the new root
+   *  @param withRoot - flag indicating whether to include the root value (Default: true)
+   *  @param root - the current root of the recursion
+   *  @param store - the store for the recursions to collect all node values in.
+   *  @returns all values of the sub tree in a list.
+   */
+  sub(value: U, withRoot = true, root = this.nodeByValue(value), store: T[] = withRoot && root ? [root.value] : []): T[] {
+    if (!root) return []
+    if (!root.leaf) {
+      for (const child of root.children) {
+        store.push(child.value)
+        this.sub(value, withRoot, child, store)
+      }
+    }
+    return store
+  }
+
+  /**
+   *  Clears the entire tree and resets its state, while comparators remain.
+   */
+  clear(): void {
+    this.count = 0
+    this.root = new TreeNode(this.count++, this.root.value)
+  }
+
+  /**
+   *  Defines the default comparator for tree traversal indicating whether to move further down the tree.
+   *
+   *  @param callback - callback defining how to validate further traversal.
+   *  @returns the current instance
+   */
   comp(callback: TreeComparator<T, U>): this {
     this.#comp = callback
     return this
   }
 
+  /**
+   *  Defines the default comparator for node existence. If true, the current root of the tree traversal is the desired value.
+   *  It is used in search algorithms.
+   *
+   *  @param callback - callback defining how to validate node existence.
+   *  @returns the current instance
+   */
   eq(callback: TreeComparator<T, U>): this {
     this.#eq = callback
     return this
   }
 
+  /**
+   *  Defines the callbacks for node existence (addEq) and further traversal (addComp) when adding new values.
+   *
+   *  @param addEq - callback defining how to validate node existence.
+   *  @param addComp - callback defining how to validate further traversal.
+   *  @returns the current instance
+   */
   onAdd(addEq: TreeComparator<T, T>, addComp: TreeComparator<T, T>): this {
     this.#addEq = addEq
     this.#addComp = addComp

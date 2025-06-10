@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## [2.1.0] 06-10-2025
+
+### Added
+
+- Method `tree.clear()` to remove all children and reset the count.
+- Method `tree.sub()` as shortcut to `branchAll(x, tree.nodeByValue(x))`
+- Property `level` to `TreeNode`
+
+### Fixed
+
+- Missing type declarations for `comp`, `eq` and `onAdd`
+- Incorrect type declaration for `branchAll`
+- Missing edge case on root value being the target value in `branchAll`
+
 ## [2.0.0] 06-08-2025
 
 ### BREAKING:
