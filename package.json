@@ -46,7 +46,7 @@
     "eslint-config-shiny": "^4.2.1",
     "jiti": "^2.4.2",
     "typescript": "^5.8.3",
-    "vite": "^6.3.5",
+    "vite": "^7.1.12",
     "vitest": "^3.2.3"
   },
   "size-limit": [
